@@ -2,48 +2,15 @@ import _ from "lodash";
 import { Card } from "primereact/card";
 import { Chart } from "primereact/chart";
 import React, { useEffect, useState } from "react";
-import { useResolvedPath } from "react-router-dom";
 import Header from "./Header";
-import hexTransform from "./utils";
 
-var xxxx = [];
-var yy = [];
-var zz = [];
+var working = [];
+var resting = [];
 var labels = [];
 var index = 0;
 var ws = new WebSocket(`ws://${window.location.host}/imuws`);
 export default function MainFace() {
   useEffect(() => {}, []);
-
-  const [vLabel, setVlabel] = useState([1, 2, 3, 4, 5]);
-  const [xData, steXdata] = useState([0, 0, 0, 0, 0]);
-  const [yData, steYdata] = useState([0, 0, 0, 0, 0]);
-  const [zData, steZdata] = useState([0, 0, 0, 0, 0]);
-
-  const [basicData, setBasicData] = useState({
-    labels: vLabel,
-    datasets: [
-      {
-        label: "x方向运动",
-        backgroundColor: "#42A5F5",
-        data: xData,
-        tension: 0.4,
-      },
-    ],
-  });
-
-  const [basicDatay, setBasicDatay] = useState({
-    labels: vLabel,
-    datasets: [
-      {
-        label: "y方向运动",
-        backgroundColor: "#42A5F5",
-        data: yData,
-        tension: 0.4,
-      },
-    ],
-  });
-
   const basicOptions = {
     animation: false,
     maintainAspectRatio: false,
@@ -71,61 +38,68 @@ export default function MainFace() {
         grid: {
           color: "#ebedef",
         },
-        suggestedMin: -1,
-        suggestedMax: 1,
+        suggestedMin: 0,
+        suggestedMax: 30,
       },
     },
   };
-
   ws.onopen = (e) => {
     console.log("ws opened...");
   };
+
+  const [basicData, setBasicData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: "工作",
+        backgroundColor: "#42A5F5",
+        data: [],
+      },
+      {
+        label: "休息",
+        backgroundColor: "#FFA726",
+        data: [],
+      },
+    ],
+  });
+
   ws.onmessage = (e) => {
-    //console.log("message received...", e.data);
     let data = JSON.parse(e.data).value;
-    console.log(data);
 
-    //basicData.datasets.data = [data[0]];
+    let work = data[0] + data[1];
+    let stop = data[2];
 
-    let pointSize = 50;
+    working.push(work);
+    resting.push(stop);
+
+    labels.push(index);
+
+    let chartData = _.cloneDeep(basicData);
+    chartData.labels = labels;
+    chartData.datasets[0].data = working;
+    chartData.datasets[1].data = resting;
 
     index += 1;
 
-    xxxx.push(data[0]);
+    setBasicData(chartData);
+  };
 
-    if (xxxx.length > pointSize) {
-      xxxx.shift();
-    }
-    labels.push(index);
-    if (labels.length > pointSize) {
-      labels.shift();
-    }
-
-    let ddx = _.cloneDeep(basicData);
-
-    ddx.labels = labels;
-    ddx.datasets[0].data = xxxx;
-
-    setBasicData(ddx);
-
-    yy.push(data[1]);
-    if (yy.length > pointSize) {
-      yy.shift();
-    }
-
-    let ddy = _.cloneDeep(basicDatay);
-    ddy.labels = labels;
-    ddy.datasets[0].data = yy;
-
-    setBasicDatay(ddy);
+  const clean = () => {
+    working = [];
+    resting = [];
+    labels = [];
+    let chartData = _.cloneDeep(basicData);
+    chartData.labels = [];
+    chartData.datasets[0].data = [];
+    chartData.datasets[1].data = [];
+    setBasicData(chartData);
   };
 
   return (
     <div>
-      <Header />
+      <Header clean={clean} />
       <Card title="实时数据" className="m-2">
-        <Chart type="line" data={basicData} options={basicOptions} />
-        {/* <Chart type="line" data={basicDatay} options={basicOptions} /> */}
+        <Chart type="bar" data={basicData} options={basicOptions} />
       </Card>
     </div>
   );
