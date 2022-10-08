@@ -128,7 +128,7 @@ export default function Header(props) {
             <span className="p-inputgroup-addon">归零区间</span>
             <InputNumber
               min={0.01}
-              max={5}
+              max={10}
               value={thresholdX}
               onValueChange={(e) => {
                 setThresholdX(e.value);
