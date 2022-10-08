@@ -15,8 +15,6 @@ var labels2 = [];
 var index2 = 0;
 var axset = [];
 
-var updateRate = 0;
-
 var ws = new WebSocket(`ws://${window.location.host}/imuws`);
 var ws2 = new WebSocket(`ws://${window.location.host}/imuws/origin`);
 export default function MainFace() {
@@ -81,20 +79,12 @@ export default function MainFace() {
       labels2.shift();
     }
 
-    if (updateRate == 10) {
-      setOriginData(dataText);
-      setOriginChartData({
-        labels: labels2,
-        datasets: [
-          {
-            label: "加速度",
-            backgroundColor: "#42A5F5",
-            data: axset,
-          },
-        ],
-      });
-      updateRate = 0;
-    }
+    setOriginData(dataText);
+    let chartData2 = _.cloneDeep(originChartData);
+    chartData2.labels = labels2;
+    chartData2.datasets[0].data = axset;
+    setOriginChartData(chartData2);
+    updateRate = 0;
 
     index2 += 1;
   };
@@ -152,21 +142,70 @@ export default function MainFace() {
     index += 1;
   };
 
+  const cleanData = () => {
+    console.log("clean data ....");
+    dataText = "";
+    working = [];
+    resting = [];
+    labels = [];
+    index = 0;
+
+    labels2 = [];
+    index2 = 0;
+    axset = [];
+
+    setOriginData(dataText);
+    setOriginChartData({
+      labels: [],
+      datasets: [
+        {
+          label: "加速度",
+          backgroundColor: "#42A5F5",
+          data: [],
+        },
+      ],
+    });
+    setBasicData({
+      labels: [],
+      datasets: [
+        {
+          label: "工作",
+          backgroundColor: "#42A5F5",
+          data: [],
+        },
+        {
+          label: "休息",
+          backgroundColor: "#FFA726",
+          data: [],
+        },
+      ],
+    });
+  };
+
   return (
     <div>
-      <Header setDataAccount={setDataAccount} setZeroAccount={setZeroAccount} />
+      <Header
+        setDataAccount={setDataAccount}
+        setZeroAccount={setZeroAccount}
+        cleanData={cleanData}
+      />
       <Card title={`周期分析 (显示${dataAccount}个数据)`} className="m-2">
         <Chart type="bar" data={basicData} options={basicOptions} />
       </Card>
-      <Card title="原始数据" className=" m-2">
-        <div className="flex card-container">
-          <div className="flex-1">
-            <InputTextarea value={originData} rows={25} ref={textArea} />
-          </div>
-          <div className="flex-auto">
-            <Chart type="bar" data={originChartData} options={basicOptions} />
-          </div>
-        </div>
+      <Card title="原始数据（加速度）" className="m-2">
+        <InputTextarea
+          value={originData}
+          rows={25}
+          ref={textArea}
+          className="inline-block"
+        />
+
+        <Chart
+          type="bar"
+          data={originChartData}
+          options={basicOptions}
+          className="inline-block ml-5 w-10"
+        />
       </Card>
     </div>
   );

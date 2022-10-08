@@ -55,13 +55,21 @@ export default function Header(props) {
         model={items}
         start={start}
         end={
-          <Button
-            label="参数配置"
-            icon="pi pi-chart-bar"
-            onClick={() => {
-              setShowParamDialog(true);
-            }}
-          />
+          <div>
+            <Button
+              label="清除数据"
+              icon="pi pi-sync"
+              onClick={props.cleanData}
+            />
+            <Button
+              className="ml-2"
+              label="参数配置"
+              icon="pi pi-chart-bar"
+              onClick={() => {
+                setShowParamDialog(true);
+              }}
+            />
+          </div>
         }
         className="border-noround w-full shadow-2"
       />
