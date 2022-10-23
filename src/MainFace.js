@@ -62,7 +62,6 @@ export default function MainFace() {
     console.log("ws2 opened...");
   };
   ws2.onmessage = (e) => {
-    updateRate += 1;
     let data = JSON.parse(e.data).value;
     // console.log(data);
     dataText += data;
@@ -84,7 +83,6 @@ export default function MainFace() {
     chartData2.labels = labels2;
     chartData2.datasets[0].data = axset;
     setOriginChartData(chartData2);
-    updateRate = 0;
 
     index2 += 1;
   };

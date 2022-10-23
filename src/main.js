@@ -1,7 +1,7 @@
 import "primeflex/primeflex.css";
 import "primeicons/primeicons.css";
 import "primereact/resources/primereact.min.css"; //core css
-import "primereact/resources/themes/md-light-indigo/theme.css"; //theme
+import "primereact/resources/themes/lara-light-indigo/theme.css"; //theme
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";

@@ -1,45 +1,47 @@
-import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { InputNumber } from "primereact/inputnumber";
 import { Menubar } from "primereact/menubar";
 import { Tag } from "primereact/tag";
-import React, { useEffect, useState, useRef } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import logo from "../public/logo192.png";
-import { Toast } from "primereact/toast";
 
 export default function Header(props) {
-  const [showParamDialog, setShowParamDialog] = useState(false);
-  const [showAccount, setShowAccount] = useState(50);
-  const [zeroAccount, setZeroAccount] = useState(3);
-  const [thresholdX, setThresholdX] = useState(0.12);
-
-  const getParam = async () => {
-    let response = await fetch("/imu/params", {
-      method: "GET",
-    });
-    let params = await response.json();
-    setZeroAccount(params.zeroAccount);
-    props.setZeroAccount(params.zeroAccount);
-    setThresholdX(params.thresholdX);
-  };
-
-  useEffect(() => {
-    getParam();
-  }, []);
-
-  const toast = useRef(null);
+  let navigate = useNavigate();
+  const items = [
+    {
+      label: "首页",
+      icon: "pi pi-fw pi-home",
+      command: (event) => {
+        navigate("/");
+      },
+    },
+    {
+      label: "设备管理",
+      icon: "pi pi-fw pi-cog",
+      items: [
+        {
+          label: "设备",
+          icon: "pi pi-fw pi-file",
+          command: (event) => {
+            navigate("/dev");
+          },
+        },
+        { label: "设备组", icon: "pi pi-fw pi-copy" },
+      ],
+    },
+  ];
 
   const start = (
     <div>
-      <Tag style={{ background: "#eff3f8" }}>
-        <img src={logo} height={30}></img>
+      <Tag style={{ background: "transparent" }}>
+        <img src={logo} height={20}></img>
       </Tag>
       <Tag
         style={{
-          background: "#eff3f8",
+          background: "transparent",
           color: "black",
           fontSize: 18,
           fontWeight: 800,
+          marginRight: "30px",
         }}
       >
         IMU 测试 <var>1.0</var>
@@ -47,115 +49,13 @@ export default function Header(props) {
     </div>
   );
 
-  const items = [];
   return (
     <div>
-      <Toast ref={toast} />
       <Menubar
         model={items}
         start={start}
-        end={
-          <div>
-            <Button
-              label="清除数据"
-              icon="pi pi-sync"
-              onClick={props.cleanData}
-            />
-            <Button
-              className="ml-2"
-              label="参数配置"
-              icon="pi pi-chart-bar"
-              onClick={() => {
-                setShowParamDialog(true);
-              }}
-            />
-          </div>
-        }
         className="border-noround w-full shadow-2"
       />
-      <Dialog
-        header="参数配置"
-        visible={showParamDialog}
-        position="top"
-        onHide={() => {
-          setShowParamDialog(false);
-        }}
-        footer={
-          <div>
-            <Button
-              label="取消"
-              icon="pi pi-times"
-              onClick={() => {
-                setShowParamDialog(false);
-              }}
-              className="p-button-text"
-            />
-            <Button
-              label="确定"
-              icon="pi pi-check"
-              onClick={async () => {
-                props.setDataAccount(showAccount);
-
-                let rs = await fetch("/imu/params", {
-                  method: "PUT",
-                  body: JSON.stringify({
-                    thresholdX: thresholdX,
-                    zeroAccount: zeroAccount,
-                  }),
-                });
-
-                if (rs.status == 202) {
-                  toast.current.show({
-                    severity: "success",
-                    summary: "成功",
-                    detail: "参数配置成功",
-                    life: 3000,
-                  });
-                }
-
-                setShowParamDialog(false);
-              }}
-              autoFocus
-            />
-          </div>
-        }
-      >
-        <div className="card">
-          <div className="p-inputgroup field">
-            <span className="p-inputgroup-addon">保留数据</span>
-            <InputNumber
-              min={10}
-              max={200}
-              value={showAccount}
-              onValueChange={(e) => {
-                setShowAccount(e.value);
-              }}
-            />
-          </div>
-          <div className="p-inputgroup field">
-            <span className="p-inputgroup-addon">归零区间</span>
-            <InputNumber
-              min={0.01}
-              max={10}
-              value={thresholdX}
-              onValueChange={(e) => {
-                setThresholdX(e.value);
-              }}
-            />
-          </div>
-          <div className="p-inputgroup">
-            <span className="p-inputgroup-addon">周期指示</span>
-            <InputNumber
-              min={1}
-              max={10}
-              value={zeroAccount}
-              onValueChange={(e) => {
-                setZeroAccount(e.value);
-              }}
-            />
-          </div>
-        </div>
-      </Dialog>
     </div>
   );
 }
