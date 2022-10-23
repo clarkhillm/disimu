@@ -34,8 +34,8 @@ export default function DevMain() {
         currentPageReportTemplate=" 显示{first}到{last}条  共{totalRecords}条"
         responsiveLayout="scroll"
       >
-        <Column header="ID" field="devId" />
-        <Column header="端口" field="measurement" />
+        <Column header="ID" field="devId" sortable />
+        <Column header="端口" field="measurement" sortable />
         <Column header="归零" field="zeroMetric" />
         <Column header="正阈值" field="positiveMetric" />
         <Column header="负阈值" field="negativeMetric" />
