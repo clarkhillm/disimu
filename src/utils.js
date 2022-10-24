@@ -1,4 +1,6 @@
-export default function hexTransform(i) {
+import _ from "lodash";
+
+export function hexTransform(i) {
   let two = parseInt(i, 16).toString(2);
   let bitNum = i.length * 4;
   if (two.length < bitNum) {
@@ -23,4 +25,21 @@ export default function hexTransform(i) {
 
     return two;
   }
+}
+
+export async function appFetch(url, options) {
+  let response = await fetch(
+    url,
+    _.assign(
+      {
+        cache: "no-cache",
+        headers: {
+          "Content-Type": "application/json",
+          "RFID-USER-TOKEN": sessionStorage.getItem("token"),
+        },
+      },
+      options
+    )
+  );
+  return response;
 }

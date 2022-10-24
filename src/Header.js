@@ -44,7 +44,7 @@ export default function Header(props) {
           marginRight: "30px",
         }}
       >
-        IMU 测试 <var>1.0</var>
+        手腕位置感应系统 <var>1.0</var>
       </Tag>
     </div>
   );

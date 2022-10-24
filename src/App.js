@@ -4,13 +4,12 @@ import { Route, Routes } from "react-router-dom";
 import DevMain from "./dev/DevMain";
 import Header from "./Header";
 import Home from "./Home";
-export const IIE_GLOBALS = {};
-IIE_GLOBALS.deviceReaderWS = undefined;
-IIE_GLOBALS.noticeWs = undefined;
+
+export const IMU_GLOBALS = {};
 
 export default function App() {
   const toast = useRef(null);
-  IIE_GLOBALS.toast = toast;
+  IMU_GLOBALS.toast = toast;
 
   return (
     <div>
