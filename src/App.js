@@ -2,9 +2,9 @@ import { Toast } from "primereact/toast";
 import React, { useRef } from "react";
 import { Route, Routes } from "react-router-dom";
 import DevMain from "./dev/DevMain";
-import DevPair from "./dev/DevPair";
 import Header from "./Header";
 import Home from "./Home";
+import PositionMain from "./position/PositionMain";
 
 export const IMU_GLOBALS = {};
 
@@ -19,7 +19,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dev" element={<DevMain />} />
-        <Route path="/dev_pair" element={<DevPair />} />
+        <Route path="/position" element={<PositionMain />} />
         <Route
           path="*"
           element={

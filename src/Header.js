@@ -17,26 +17,16 @@ export default function Header(props) {
     {
       label: "设备管理",
       icon: "pi pi-fw pi-cog",
-      items: [
-        {
-          label: "设备",
-          icon: "pi pi-fw pi-file",
-          command: (event) => {
-            navigate("/dev");
-          },
-        },
-        {
-          label: "设备组",
-          icon: "pi pi-fw pi-copy",
-          command: (event) => {
-            navigate("/dev_pair");
-          },
-        },
-      ],
+      command: (event) => {
+        navigate("/dev");
+      },
     },
     {
       label: "工位管理",
       icon: "pi pi-users",
+      command: (event) => {
+        navigate("/position");
+      },
     },
     {
       label: "数据分析",

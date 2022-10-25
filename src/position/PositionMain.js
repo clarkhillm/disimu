@@ -10,65 +10,26 @@ import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
 import { IMU_GLOBALS } from "../app";
 import { appFetch } from "../utils";
-import { list } from "./service";
-import { Dropdown } from "primereact/dropdown";
 
-export default function DevMain() {
-  let [devList, setDevList] = useState([]);
+export default function PositionMain() {
+  let [list, setList] = useState([]);
   let [showCreate, setShowCreate] = useState(false);
-  let [positionList, setPositionList] = useState([]);
-
-  const wristItems = [
-    { label: "左手", value: "LEFT" },
-    { label: "右手", value: "RIGHT" },
-  ];
-
-  const getList = async () => {
-    let rs = await list();
-    setDevList(rs);
-  };
-
-  const getPositionList = async () => {
-    let rs = await appFetch("/imu/position/list", { method: "GET" });
-    if (rs.status == 200) {
-      let d_ = await rs.json();
-      setPositionList(
-        _.map(d_, (item) => {
-          return {
-            label: item.code,
-            value: item.id,
-          };
-        })
-      );
-    }
-  };
-
-  useEffect(() => {
-    getList();
-    getPositionList();
-  }, []);
 
   const formikCreate = useFormik({
     initialValues: {
-      devId: "",
-      measurement: "",
-      position: "",
-      wrist: "LEFT",
-      description: "",
+      name: "",
+      code: "",
+      comment: "",
     },
     validate: (data) => {
       let errors = {};
 
-      if (!data.devId) {
-        errors.devId = "设备id不能为空";
+      if (!data.name) {
+        errors.name = "员工姓名不能为空";
       }
 
-      if (!data.measurement) {
-        errors.measurement = "设备的端口不能为空";
-      }
-
-      if (!data.position) {
-        errors.position = "清选择一个工位";
+      if (!data.code) {
+        errors.name = "员工工号不能为空";
       }
 
       return errors;
@@ -76,7 +37,7 @@ export default function DevMain() {
     onSubmit: async (data) => {
       console.log("on submit create ...", data);
       setShowCreate(false);
-      let rs = await appFetch("/imu/dev", {
+      let rs = await appFetch("/imu/position", {
         method: "POST",
         body: JSON.stringify(data),
       });
@@ -84,7 +45,7 @@ export default function DevMain() {
         IMU_GLOBALS.toast.current.show({
           severity: "info",
           summary: "信息",
-          detail: "设备添加成功。",
+          detail: "工位添加成功。",
           life: 3000,
         });
         getList();
@@ -92,7 +53,7 @@ export default function DevMain() {
         IMU_GLOBALS.toast.current.show({
           severity: "error",
           summary: "错误",
-          detail: "设备添加失败。",
+          detail: "工位添加失败。",
           life: 3000,
         });
       }
@@ -109,8 +70,19 @@ export default function DevMain() {
     );
   };
 
+  const getList = async () => {
+    let rs = await appFetch("/imu/position/list", { method: "GET" });
+    if (rs.status == 200) {
+      setList(await rs.json());
+    }
+  };
+
+  useEffect(() => {
+    getList();
+  }, []);
+
   return (
-    <Card className="m-2" title="设备管理">
+    <Card className="m-2" title="工位管理">
       <Toolbar
         className="mb-4"
         left={
@@ -126,7 +98,7 @@ export default function DevMain() {
         }
       ></Toolbar>
       <DataTable
-        value={devList}
+        value={list}
         dataKey="id"
         paginator
         rows={5}
@@ -136,28 +108,15 @@ export default function DevMain() {
         responsiveLayout="scroll"
         emptyMessage="没有数据"
       >
-        <Column header="ID" field="devId" sortable />
-        <Column header="端口" field="measurement" sortable />
-        <Column header="工位" field="position" sortable />
-        <Column header="手腕" field="wrist" sortable />
+        <Column header="员工姓名" field="name" sortable />
+        <Column header="工位编号" field="code" sortable />
         <Column header="创建日期" field="dtCreated" sortable />
         <Column header="更新日期" field="dtUpdated" sortable />
-
         <Column
           header="操作"
           body={(rowdata) => {
             return (
-              <div className="">
-                <Button
-                  label="查看15分钟数据"
-                  icon="pi pi-search"
-                  className="p-button-rounded p-button-outlined p-button-sm mr-2"
-                />
-                <Button
-                  label="更新"
-                  icon="pi pi-file"
-                  className="p-button-rounded p-button-outlined p-button-warning p-button-sm mr-2"
-                />
+              <div>
                 <Button
                   label="删除"
                   icon="pi pi-trash"
@@ -165,14 +124,17 @@ export default function DevMain() {
                   onClick={async () => {
                     console.log("rowdata", rowdata);
                     confirmDialog({
-                      message: "确认删除" + rowdata.devId,
+                      message: "确认删除工位：" + rowdata.code,
                       header: "确认删除",
                       icon: "pi pi-exclamation-triangle",
                       acceptClassName: "p-button-danger",
                       accept: async () => {
-                        let rs = await appFetch(`/imu/dev/del/${rowdata.id}`, {
-                          method: "delete",
-                        });
+                        let rs = await appFetch(
+                          `/imu/position/del/${rowdata.id}`,
+                          {
+                            method: "delete",
+                          }
+                        );
                         if (rs.status == 200) {
                           getList();
                         }
@@ -187,7 +149,7 @@ export default function DevMain() {
         />
       </DataTable>
       <Dialog
-        header="创建设备"
+        header="新建工位"
         visible={showCreate}
         position="top"
         modal
@@ -201,41 +163,21 @@ export default function DevMain() {
         <form onSubmit={formikCreate.handleSubmit} className="p-fluid">
           <div className="field">
             <InputText
-              name="devId"
-              value={formikCreate.values.devId}
-              placeholder="设备ID"
+              name="name"
+              value={formikCreate.values.name}
+              placeholder="姓名"
               onChange={formikCreate.handleChange}
             />
-            {getFormErrorMessage("devId")}
+            {getFormErrorMessage("name")}
           </div>
           <div className="field">
             <InputText
-              name="measurement"
-              value={formikCreate.values.measurement}
-              placeholder="端口"
+              name="code"
+              value={formikCreate.values.code}
+              placeholder="工位编号"
               onChange={formikCreate.handleChange}
             />
-            {getFormErrorMessage("measurement")}
-          </div>
-          <div className="field">
-            <Dropdown
-              name="position"
-              value={formikCreate.values.position}
-              options={positionList}
-              onChange={formikCreate.handleChange}
-              placeholder="请选择工位"
-            />
-            {getFormErrorMessage("position")}
-          </div>
-          <div className="field">
-            <Dropdown
-              name="wrist"
-              value={formikCreate.values.wrist}
-              options={wristItems}
-              onChange={formikCreate.handleChange}
-              placeholder="请选择手腕"
-            />
-            {getFormErrorMessage("wrist")}
+            {getFormErrorMessage("code")}
           </div>
           <div className="p-dialog-footer pb-0">
             <Button
