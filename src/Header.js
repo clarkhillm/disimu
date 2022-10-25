@@ -25,8 +25,22 @@ export default function Header(props) {
             navigate("/dev");
           },
         },
-        { label: "设备组", icon: "pi pi-fw pi-copy" },
+        {
+          label: "设备组",
+          icon: "pi pi-fw pi-copy",
+          command: (event) => {
+            navigate("/dev_pair");
+          },
+        },
       ],
+    },
+    {
+      label: "工位管理",
+      icon: "pi pi-users",
+    },
+    {
+      label: "数据分析",
+      icon: "pi pi-chart-bar",
     },
   ];
 

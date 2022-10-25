@@ -1,16 +1,17 @@
-import { Card } from "primereact/card";
+import { useFormik } from "formik";
 import { Button } from "primereact/button";
+import { Card } from "primereact/card";
 import { Column } from "primereact/column";
+import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
+import { Dialog } from "primereact/dialog";
+import { InputNumber } from "primereact/inputnumber";
+import { InputText } from "primereact/inputtext";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
-import { Dialog } from "primereact/dialog";
-import { list } from "./service";
-import { useFormik } from "formik";
-import { InputText } from "primereact/inputtext";
-import { InputNumber } from "primereact/inputnumber";
-import { appFetch } from "../utils";
 import { IMU_GLOBALS } from "../app";
+import { appFetch } from "../utils";
+import { list } from "./service";
 
 export default function DevMain() {
   let [devList, setDevList] = useState([]);
@@ -111,21 +112,33 @@ export default function DevMain() {
                 <Button
                   label="查看15分钟数据"
                   icon="pi pi-search"
-                  className="p-button-rounded p-button-sm mr-2"
+                  className="p-button-rounded p-button-outlined p-button-sm mr-2"
                 />
                 <Button
                   label="更新"
                   icon="pi pi-file"
-                  className="p-button-rounded p-button-warning p-button-sm mr-2"
+                  className="p-button-rounded p-button-outlined p-button-warning p-button-sm mr-2"
                 />
                 <Button
                   label="删除"
                   icon="pi pi-trash"
-                  className="p-button-rounded p-button-danger p-button-sm"
+                  className="p-button-rounded p-button-outlined p-button-danger p-button-sm"
                   onClick={async () => {
                     console.log("rowdata", rowdata);
-                    let rs = await appFetch(`/imu/dev/${rowdata.id}`, {
-                      method: "delete",
+                    confirmDialog({
+                      message: "确认删除" + rowdata.devId,
+                      header: "确认删除",
+                      icon: "pi pi-exclamation-triangle",
+                      acceptClassName: "p-button-danger",
+                      accept: async () => {
+                        let rs = await appFetch(`/imu/dev/del/${rowdata.id}`, {
+                          method: "delete",
+                        });
+                        if (rs.status == 200) {
+                          getList();
+                        }
+                      },
+                      reject: () => {},
                     });
                   }}
                 />
@@ -212,6 +225,7 @@ export default function DevMain() {
           </div>
         </form>
       </Dialog>
+      <ConfirmDialog />
     </Card>
   );
 }
