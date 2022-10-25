@@ -8,12 +8,12 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
-import { IMU_GLOBALS } from "../app";
+import { IMU_GLOBALS } from "../appRoute";
 import { appFetch } from "../utils";
 
 export default function PositionMain() {
-  let [list, setList] = useState([]);
-  let [showCreate, setShowCreate] = useState(false);
+  const [list, setList] = useState([]);
+  const [showCreate, setShowCreate] = useState(false);
 
   const formikCreate = useFormik({
     initialValues: {
@@ -88,6 +88,7 @@ export default function PositionMain() {
         left={
           <div>
             <Button
+              className="p-button-sm"
               label="新建"
               icon="pi pi-plus"
               onClick={() => {

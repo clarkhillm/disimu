@@ -31,6 +31,9 @@ export default function Header(props) {
     {
       label: "数据分析",
       icon: "pi pi-chart-bar",
+      command: (event) => {
+        navigate("/analyses");
+      },
     },
   ];
 

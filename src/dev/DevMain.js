@@ -8,15 +8,15 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
-import { IMU_GLOBALS } from "../app";
+import { IMU_GLOBALS } from "../appRoute";
 import { appFetch } from "../utils";
 import { list } from "./service";
 import { Dropdown } from "primereact/dropdown";
 
 export default function DevMain() {
-  let [devList, setDevList] = useState([]);
-  let [showCreate, setShowCreate] = useState(false);
-  let [positionList, setPositionList] = useState([]);
+  const [devList, setDevList] = useState([]);
+  const [showCreate, setShowCreate] = useState(false);
+  const [positionList, setPositionList] = useState([]);
 
   const wristItems = [
     { label: "左手", value: "LEFT" },
@@ -116,6 +116,7 @@ export default function DevMain() {
         left={
           <div>
             <Button
+              className="p-button-sm"
               label="新建"
               icon="pi pi-plus"
               onClick={() => {
