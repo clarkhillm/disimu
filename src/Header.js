@@ -4,7 +4,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../public/logo192.png";
 
-export default function Header(props) {
+export default function Header() {
   let navigate = useNavigate();
   const items = [
     {

@@ -1,93 +1,42 @@
-import React, { useEffect, useState } from "react";
-import { Card } from "primereact/card";
-import { Toolbar } from "primereact/toolbar";
+import _ from "lodash";
+import moment from "moment/moment";
 import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
-import { appFetch } from "../utils";
-import { TabView, TabPanel } from "primereact/tabview";
-import { Fieldset } from "primereact/fieldset";
-import { Chart } from "primereact/chart";
-import { Calendar } from "primereact/calendar";
-import { RadioButton } from "primereact/radiobutton";
+import { Card } from "primereact/card";
 import { Dialog } from "primereact/dialog";
+import { Dropdown } from "primereact/dropdown";
+import { Fieldset } from "primereact/fieldset";
+import { RadioButton } from "primereact/radiobutton";
+import { TabPanel, TabView } from "primereact/tabview";
+import { Toolbar } from "primereact/toolbar";
+import React, { useEffect, useState } from "react";
+import { appFetch } from "../utils";
+import BigLineChart from "./BigLineChart";
+
+import { Sidebar } from "primereact/sidebar";
+import { InputNumber } from "primereact/inputnumber";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
   const [currentPosition, setCurrentPosition] = useState("");
-  const [dates2, setDates2] = useState(null);
+
+  const [timeDesc, setTimeDesc] = useState("-1h");
+
   const [displayBasic, setDisplayBasic] = useState(false);
 
   const [algorithm, setAlgorithm] = useState("simple_zero");
 
-  const [basicData] = useState({
-    labels: [0, 1, 2, 3, 4, 5, 6, 7],
-    datasets: [
-      {
-        label: "加速度",
-        data: [65, 59, 80, 81, -56, 55, 40],
-        fill: true,
-        borderColor: "#42A5F5",
-        tension: 0.4,
-      },
-    ],
-  });
+  const [leftLabels, setLeftLabels] = useState([]);
+  const [leftDataSet, setLeftDataSet] = useState([]);
 
-  const [basicData2] = useState({
-    labels: [1, 2, 3, 4, 5, 6, 7],
-    datasets: [
-      {
-        label: "速度",
-        backgroundColor: "#FFA726",
-        data: [65, 59, -80, 81, 56, 55, 40],
-      },
-    ],
-  });
+  const [rightLabels, setRightLabels] = useState([]);
+  const [rightDataSet, setRightDataSet] = useState([]);
 
-  const [basicData3] = useState({
-    labels: [1, 2, 3, 4, 5, 6, 7],
-    datasets: [
-      {
-        label: "运动",
-        backgroundColor: "#42A5F5",
-        data: [65, 59, 80, 81, 56, 55, 40],
-      },
-      {
-        label: "停止",
-        backgroundColor: "#FFA726",
-        data: [28, 48, 40, 19, 86, 27, 90],
-      },
-    ],
-  });
+  const [visibleRight, setVisibleRight] = useState(false);
 
-  let basicOptions = {
-    maintainAspectRatio: false,
-    aspectRatio: 0.6,
-    plugins: {
-      legend: {
-        labels: {
-          color: "#495057",
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: "#495057",
-        },
-        grid: {
-          color: "#ebedef",
-        },
-      },
-      y: {
-        ticks: {
-          color: "#495057",
-        },
-        grid: {
-          color: "#ebedef",
-        },
-      },
-    },
-  };
+  const [algorithmParams, setAlgorithmParams] = useState({
+    simple_zero: { zeroFlag: 0.12, zeroAccount: 3 },
+    tow_way: { zeroFlag: 0.11, zeroAccount: 2, pt: 1.5, nt: 1.5 },
+  });
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -107,6 +56,40 @@ export default function AnalysesMain() {
   useEffect(() => {
     getPositionList();
   }, []);
+
+  const calculateOriginLeft = (dataSet) => {
+    let leftLabels = [];
+    let left_datasets_data = [];
+    _.each(dataSet, (data) => {
+      leftLabels.push(moment(data.datetime).format("YYYY-MM-DD HH:mm:ss"));
+      left_datasets_data.push(data.value);
+    });
+    setLeftLabels(leftLabels);
+    setLeftDataSet(left_datasets_data);
+  };
+
+  const calculateOriginRight = (dataSet) => {
+    let labels = [];
+    let datasets_data = [];
+    _.each(dataSet, (data) => {
+      labels.push(moment(data.datetime).format("YYYY-MM-DD HH:mm:ss"));
+      datasets_data.push(data.value);
+    });
+    setRightLabels(labels);
+    setRightDataSet(datasets_data);
+  };
+
+  const getAlgorithmName = () => {
+    switch (algorithm) {
+      case "simple_zero":
+        return "简单归零";
+      case "tow_way":
+        return "双向启停";
+      case "movement":
+        return "运动方向";
+    }
+  };
+
   return (
     <Card className="m-2" title="数据分析管理">
       <Toolbar
@@ -119,25 +102,48 @@ export default function AnalysesMain() {
               value={currentPosition}
               options={positionList}
               onChange={(e) => {
-                console.log(e);
                 setCurrentPosition(e.value);
               }}
               placeholder="请选择工位"
             />
             &nbsp;&nbsp;&nbsp;
             <span>时间范围：</span>
-            <Calendar
-              id="range"
-              value={dates2}
-              onChange={(e) => setDates2(e.value)}
-              selectionMode="range"
-              readOnlyInput
+            <Dropdown
+              name="position"
+              value={timeDesc}
+              options={[
+                { label: "过去1小时", value: "-1h" },
+                { label: "过去2小时", value: "-2h" },
+                { label: "过去3小时", value: "-3h" },
+                { label: "过去4小时", value: "-4h" },
+                { label: "过去5小时", value: "-5h" },
+                { label: "过去8小时", value: "-8h" },
+                { label: "过去1天", value: "-1d" },
+                { label: "过去2天", value: "-2d" },
+                { label: "过去3天", value: "-3d" },
+                { label: "过去4天", value: "-4d" },
+                { label: "过去5天", value: "-5d" },
+              ]}
+              onChange={(e) => {
+                setTimeDesc(e.value);
+              }}
             />
             &nbsp;&nbsp;&nbsp;
             <Button
               icon="pi pi-check"
               className="p-button-rounded"
-              aria-label="Filter"
+              onClick={async () => {
+                let rs = await appFetch(
+                  `/imu/analyses/query/${currentPosition}?timeDesc=${timeDesc}`,
+                  { method: "GET" }
+                );
+                if (rs.status == 200) {
+                  let dataSet = await rs.json();
+
+                  calculateOriginLeft(dataSet["LEFT"]);
+                  calculateOriginRight(dataSet["RIGHT"]);
+                }
+              }}
             />
           </div>
         }
@@ -146,39 +152,10 @@ export default function AnalysesMain() {
         <TabPanel header="原始数据">
           <p>直接展示传感器获取的原始数据</p>
           <Fieldset legend="左手" toggleable className="mb-2">
-            <Chart
-              className="h-20rem"
-              type="line"
-              data={basicData}
-              options={basicOptions}
-            />
+            <BigLineChart date={leftLabels} data={leftDataSet} />
           </Fieldset>
           <Fieldset legend="右手" toggleable>
-            <Chart
-              className="h-20rem"
-              type="line"
-              data={basicData}
-              options={basicOptions}
-            />
-          </Fieldset>
-        </TabPanel>
-        <TabPanel header="运动方向分析">
-          <p>展示运动速度和速度的方向 </p>
-          <Fieldset legend="左手" toggleable className="mb-2">
-            <Chart
-              className="h-20rem"
-              type="bar"
-              data={basicData2}
-              options={basicOptions}
-            />
-          </Fieldset>
-          <Fieldset legend="右手" toggleable>
-            <Chart
-              className="h-20rem"
-              type="bar"
-              data={basicData2}
-              options={basicOptions}
-            />
+            <BigLineChart date={rightLabels} data={rightDataSet} />
           </Fieldset>
         </TabPanel>
         <TabPanel header="工作周期分析">
@@ -203,83 +180,93 @@ export default function AnalysesMain() {
                 />
                 &nbsp;&nbsp;
                 <span>双向启停</span>
-                &nbsp;&nbsp;&nbsp;
-                <RadioButton
-                  name="algorithm"
-                  value="movement"
-                  onChange={(e) => setAlgorithm(e.value)}
-                  checked={algorithm === "movement"}
-                />
-                &nbsp;&nbsp;
-                <span>运动方向</span>
               </div>
             }
             right={
               <div>
                 <Button
-                  label="算法说明"
-                  className="p-button-sm p-button-rounded "
+                  label="参数"
+                  className="p-button-sm p-button-rounded p-button-warning"
+                  disabled={currentPosition == ""}
                   onClick={() => {
-                    setDisplayBasic(true);
+                    setVisibleRight(true);
                   }}
                 />
                 &nbsp;&nbsp;
                 <Button
-                  label="算法参数"
-                  className="p-button-sm p-button-rounded p-button-warning"
-                />
-                &nbsp;&nbsp;
-                <Button
-                  label="开始分析"
+                  label="分析"
                   className="p-button-sm p-button-rounded  p-button-success"
+                  disabled={leftLabels.length == 0 && rightLabels.length == 0}
                 />
               </div>
             }
           ></Toolbar>
-          <Chart
-            className="h-20rem"
-            type="bar"
-            data={basicData3}
-            options={basicOptions}
-          />
         </TabPanel>
       </TabView>
-      <Dialog
-        header={(() => {
-          switch (algorithm) {
-            case "simple_zero":
-              return "简单归零";
-            case "tow_way":
-              return "双向启停";
-            case "movement":
-              return "运动方向";
-          }
-        })()}
-        visible={displayBasic}
-        onHide={() => {
-          setDisplayBasic(false);
-        }}
+      <Sidebar
+        visible={visibleRight}
+        position="right"
+        onHide={() => setVisibleRight(false)}
       >
-        {(() => {
-          switch (algorithm) {
-            case "simple_zero":
-              return (
-                <div>
-                  <p>
-                    简单归零算法会根据运动的归零个数或者间歇时间来进行周期划分。
-                  </p>
-                  <p>
-                    比如：发现连续3个以上的归零，或者归零的时间持续了有若干秒，则认为是一个周期的分隔。
-                  </p>
-                </div>
-              );
-            case "tow_way":
-              return "双向启停";
-            case "movement":
-              return "运动方向";
-          }
-        })()}
-      </Dialog>
+        <h3>配置算法参数</h3>
+        <h5>{getAlgorithmName()}</h5>
+        <div className="card ">
+          <div className="field ">
+            <label>归零区间：</label>
+            <InputNumber
+              mode="decimal"
+              minFractionDigits={2}
+              value={algorithmParams[algorithm].zeroFlag}
+              onChange={(e) => {
+                algorithmParams[algorithm].zeroFlag = e.value;
+              }}
+            />
+          </div>
+          <div className="field ">
+            <label>归零计数：</label>
+            <InputNumber
+              value={algorithmParams[algorithm].zeroAccount}
+              onChange={(e) => {
+                algorithmParams[algorithm].zeroAccount = e.value;
+              }}
+            />
+          </div>
+          {algorithm == "tow_way" && (
+            <div>
+              <div className="field">
+                <label>正向阈值：</label>
+                <InputNumber
+                  mode="decimal"
+                  minFractionDigits={2}
+                  value={algorithmParams[algorithm].pt}
+                  onChange={(e) => {
+                    algorithmParams[algorithm].pt = e.value;
+                  }}
+                />
+              </div>
+              <div className="field">
+                <label>负向阈值：</label>
+                <InputNumber
+                  mode="decimal"
+                  minFractionDigits={2}
+                  value={algorithmParams[algorithm].nt}
+                  onChange={(e) => {
+                    algorithmParams[algorithm].nt = e.value;
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          <div className="mt-5" style={{ paddingLeft: "115px" }}>
+            <Button
+              label="保存"
+              onClick={() => {
+                setVisibleRight(false);
+              }}
+            />
+          </div>
+        </div>
+      </Sidebar>
     </Card>
   );
 }
