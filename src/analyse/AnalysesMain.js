@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { uniqueId } from "lodash";
 import moment from "moment/moment";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
@@ -14,6 +14,7 @@ import BigLineChart from "./BigLineChart";
 
 import { Sidebar } from "primereact/sidebar";
 import { InputNumber } from "primereact/inputnumber";
+import { IMU_GLOBALS } from "../appRoute";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -33,6 +34,8 @@ export default function AnalysesMain() {
 
   const [visibleRight, setVisibleRight] = useState(false);
 
+  const [settingId, setSettingId] = useState("");
+
   const [algorithmParams, setAlgorithmParams] = useState({
     simple_zero: { zeroFlag: 0.12, zeroAccount: 3 },
     tow_way: { zeroFlag: 0.11, zeroAccount: 2, pt: 1.5, nt: 1.5 },
@@ -50,6 +53,43 @@ export default function AnalysesMain() {
           };
         })
       );
+    }
+  };
+
+  const getPositionSetting = async (value) => {
+    let rs = await appFetch(`/imu/position/setting/${value}`, {
+      method: "GET",
+    });
+    if (rs.status == 200) {
+      let setting = await rs.json();
+      if (!_.isEmpty(setting)) {
+        setAlgorithmParams(JSON.parse(setting.settings));
+        setSettingId(setting.id);
+      } else {
+        setAlgorithmParams({
+          simple_zero: { zeroFlag: 0.12, zeroAccount: 3 },
+          tow_way: { zeroFlag: 0.11, zeroAccount: 2, pt: 1.5, nt: 1.5 },
+        });
+      }
+    }
+  };
+
+  const savePositionSetting = async () => {
+    let rs = await appFetch("/imu/position/setting", {
+      method: "PUT",
+      body: JSON.stringify({
+        id: settingId,
+        positionId: currentPosition,
+        settings: JSON.stringify(algorithmParams),
+      }),
+    });
+    if (rs == 200) {
+      IMU_GLOBALS.toast.current.show({
+        severity: "info",
+        summary: "信息",
+        detail: "参数保存成功。",
+        life: 3000,
+      });
     }
   };
 
@@ -103,6 +143,7 @@ export default function AnalysesMain() {
               options={positionList}
               onChange={(e) => {
                 setCurrentPosition(e.value);
+                getPositionSetting(e.value);
               }}
               placeholder="请选择工位"
             />
@@ -197,6 +238,23 @@ export default function AnalysesMain() {
                   label="分析"
                   className="p-button-sm p-button-rounded  p-button-success"
                   disabled={leftLabels.length == 0 && rightLabels.length == 0}
+                  onClick={() => {
+                    switch (algorithm) {
+                      case "simple_zero":
+                        console.log(
+                          "simple_zero",
+                          "zeroFlag:",
+                          algorithmParams.simple_zero.zeroFlag,
+                          "zeroAccount:",
+                          algorithmParams.simple_zero.zeroAccount
+                        );
+                        break;
+                      case "tow_way":
+                        break;
+                      case "movement":
+                        return "运动方向";
+                    }
+                  }}
                 />
               </div>
             }
@@ -261,6 +319,7 @@ export default function AnalysesMain() {
             <Button
               label="保存"
               onClick={() => {
+                savePositionSetting();
                 setVisibleRight(false);
               }}
             />

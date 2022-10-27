@@ -150,11 +150,6 @@ export default function DevMain() {
             return (
               <div className="">
                 <Button
-                  label="查看15分钟数据"
-                  icon="pi pi-search"
-                  className="p-button-rounded p-button-outlined p-button-sm mr-2"
-                />
-                <Button
                   label="更新"
                   icon="pi pi-file"
                   className="p-button-rounded p-button-outlined p-button-warning p-button-sm mr-2"
