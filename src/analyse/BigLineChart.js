@@ -1,30 +1,8 @@
-import { LineChart } from "echarts/charts";
-import {
-  DataZoomComponent,
-  GridComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-  LegendComponent,
-} from "echarts/components";
-import * as echarts from "echarts/core";
-import { UniversalTransition } from "echarts/features";
-import { CanvasRenderer } from "echarts/renderers";
+import * as echarts from "echarts";
+import _ from "lodash";
 import React, { useEffect, useRef } from "react";
 
 export default function BigLineChart(props) {
-  echarts.use([
-    TitleComponent,
-    ToolboxComponent,
-    TooltipComponent,
-    GridComponent,
-    DataZoomComponent,
-    LineChart,
-    CanvasRenderer,
-    UniversalTransition,
-    LegendComponent,
-  ]);
-
   const chartRef = useRef();
 
   let myChart = null;
@@ -43,7 +21,6 @@ export default function BigLineChart(props) {
     },
 
     legend: {
-      data: ["左手", "右手"],
       left: 10,
     },
 
@@ -57,12 +34,8 @@ export default function BigLineChart(props) {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: [],
     },
-    yAxis: {
-      type: "value",
-      boundaryGap: [0, "10%"],
-    },
+    yAxis: {},
     dataZoom: [
       {
         type: "inside",
@@ -74,20 +47,20 @@ export default function BigLineChart(props) {
         end: 10,
       },
     ],
+    dataset: {
+      dimensions: ["time", "left", "right"],
+      source: [],
+    },
     series: [
       {
-        name: "左手",
         type: "line",
         //symbol: "none",
         sampling: "lttb",
-        data: [],
       },
       {
-        name: "右手",
         type: "line",
         //symbol: "none",
         sampling: "lttb",
-        data: [],
       },
       ,
     ],
@@ -101,12 +74,10 @@ export default function BigLineChart(props) {
       myChart = echarts.init(chartRef.current);
     }
 
-    option.xAxis.data = props.date;
-    option.series[0].data = props.data[0];
-    option.series[1].data = props.data[1];
+    option.dataset.source = props.dataSource;
 
     option && myChart.setOption(option);
-  }, [props.date]);
+  }, [props.dataSource]);
 
   return <div style={{ width: "100%", height: "400px" }} ref={chartRef} />;
 }

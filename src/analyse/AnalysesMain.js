@@ -3,7 +3,6 @@ import moment from "moment/moment";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Dropdown } from "primereact/dropdown";
-import { Fieldset } from "primereact/fieldset";
 import { RadioButton } from "primereact/radiobutton";
 import { TabPanel, TabView } from "primereact/tabview";
 import { Toolbar } from "primereact/toolbar";
@@ -24,12 +23,6 @@ export default function AnalysesMain() {
 
   const [algorithm, setAlgorithm] = useState("simple_zero");
 
-  const [leftLabels, setLeftLabels] = useState([]);
-  const [leftDataSet, setLeftDataSet] = useState([]);
-
-  const [rightLabels, setRightLabels] = useState([]);
-  const [rightDataSet, setRightDataSet] = useState([]);
-
   const [visibleRight, setVisibleRight] = useState(false);
 
   const [settingId, setSettingId] = useState("");
@@ -38,7 +31,7 @@ export default function AnalysesMain() {
     simple_zero: { zeroFlag: 0.12, zeroAccount: 3, pt: 1.5, nt: 1.5 },
   });
 
-  const [dataSet, setDataSet] = useState({});
+  const [dataSet, setDataSet] = useState([]);
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -95,26 +88,14 @@ export default function AnalysesMain() {
     getPositionList();
   }, []);
 
-  const calculateOriginLeft = (dataSet) => {
-    let leftLabels = [];
-    let left_datasets_data = [];
+  const calculateOrigin = (dataSet) => {
+    let labelSet = [];
+    let _dataSet = [];
     _.each(dataSet, (data) => {
-      leftLabels.push(moment(data.datetime).format("YYYY-MM-DD HH:mm:ss"));
-      left_datasets_data.push(data.value);
+      labelSet.push(moment(data.datetime));
+      _dataSet.push(data.value);
     });
-    setLeftLabels(leftLabels);
-    setLeftDataSet(left_datasets_data);
-  };
-
-  const calculateOriginRight = (dataSet) => {
-    let labels = [];
-    let datasets_data = [];
-    _.each(dataSet, (data) => {
-      labels.push(moment(data.datetime).format("YYYY-MM-DD HH:mm:ss"));
-      datasets_data.push(data.value);
-    });
-    setRightLabels(labels);
-    setRightDataSet(datasets_data);
+    return { label: labelSet, data: _dataSet };
   };
 
   const getAlgorithmName = () => {
@@ -179,10 +160,27 @@ export default function AnalysesMain() {
                 if (rs.status == 200) {
                   let dataSet = await rs.json();
 
-                  setDataSet(dataSet);
+                  let dataSource = [];
+                  // 合并左右手数据，以左手为主。
 
-                  calculateOriginLeft(dataSet["LEFT"]);
-                  calculateOriginRight(dataSet["RIGHT"]);
+                  let left_ds = calculateOrigin(dataSet["LEFT"]);
+                  let right_ds = calculateOrigin(dataSet["RIGHT"]);
+
+                  _.each(left_ds.label, (v, i) => {
+                    let data = {
+                      time: v.format("YYYY-MM-DD HH:mm:ss SSSS"),
+                      left: left_ds.data[i],
+                    };
+                    _.each(right_ds.label, (vv, j) => {
+                      if (Math.abs(v.diff(vv)) < 100) {
+                        //console.log(vv.format("YYYY-MM-DD HH:mm:ss SSSS"));
+                        data.right = right_ds.data[j];
+                      }
+                    });
+                    dataSource.push(data);
+                  });
+
+                  setDataSet(dataSource);
                 }
               }}
             />
@@ -191,7 +189,7 @@ export default function AnalysesMain() {
       ></Toolbar>
       <TabView>
         <TabPanel header="原始数据">
-          <BigLineChart date={leftLabels} data={[leftDataSet, rightDataSet]} />
+          <BigLineChart dataSource={dataSet} />
         </TabPanel>
         <TabPanel header="工作周期分析">
           <Toolbar
@@ -230,14 +228,13 @@ export default function AnalysesMain() {
                 <Button
                   label="分析"
                   className="p-button-sm p-button-rounded  p-button-success"
-                  disabled={leftLabels.length == 0 && rightLabels.length == 0}
                   onClick={() => {
                     switch (algorithm) {
                       case "simple_zero":
-                        let rs = SimpleZero(dataSet, {
-                          zeroFlag: algorithmParams.simple_zero.zeroFlag,
-                          zeroAccount: algorithmParams.simple_zero.zeroAccount,
-                        });
+                        let rs = SimpleZero(
+                          dataSet,
+                          algorithmParams.simple_zero
+                        );
 
                         break;
                       case "tow_way":
