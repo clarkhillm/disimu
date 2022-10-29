@@ -5,6 +5,7 @@ import {
   TitleComponent,
   ToolboxComponent,
   TooltipComponent,
+  LegendComponent,
 } from "echarts/components";
 import * as echarts from "echarts/core";
 import { UniversalTransition } from "echarts/features";
@@ -21,6 +22,7 @@ export default function BigLineChart(props) {
     LineChart,
     CanvasRenderer,
     UniversalTransition,
+    LegendComponent,
   ]);
 
   const chartRef = useRef();
@@ -28,12 +30,23 @@ export default function BigLineChart(props) {
   let myChart = null;
 
   let option = {
+    grid: {
+      x: 25,
+      x2: 25,
+    },
+    title: {
+      text: "加速度",
+      left: "center",
+    },
     tooltip: {
       trigger: "axis",
-      position: function(pt) {
-        return [pt[0], "10%"];
-      },
     },
+
+    legend: {
+      data: ["左手", "右手"],
+      left: 10,
+    },
+
     toolbox: {
       feature: {
         dataZoom: {
@@ -63,13 +76,20 @@ export default function BigLineChart(props) {
     ],
     series: [
       {
-        name: "加速度",
+        name: "左手",
         type: "line",
-        symbol: "none",
+        //symbol: "none",
         sampling: "lttb",
-        smooth: true,
         data: [],
       },
+      {
+        name: "右手",
+        type: "line",
+        //symbol: "none",
+        sampling: "lttb",
+        data: [],
+      },
+      ,
     ],
   };
 
@@ -82,7 +102,8 @@ export default function BigLineChart(props) {
     }
 
     option.xAxis.data = props.date;
-    option.series[0].data = props.data;
+    option.series[0].data = props.data[0];
+    option.series[1].data = props.data[1];
 
     option && myChart.setOption(option);
   }, [props.date]);

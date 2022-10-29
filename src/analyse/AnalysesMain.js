@@ -1,8 +1,7 @@
-import _, { uniqueId } from "lodash";
+import _ from "lodash";
 import moment from "moment/moment";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Dialog } from "primereact/dialog";
 import { Dropdown } from "primereact/dropdown";
 import { Fieldset } from "primereact/fieldset";
 import { RadioButton } from "primereact/radiobutton";
@@ -12,17 +11,16 @@ import React, { useEffect, useState } from "react";
 import { appFetch } from "../utils";
 import BigLineChart from "./BigLineChart";
 
-import { Sidebar } from "primereact/sidebar";
 import { InputNumber } from "primereact/inputnumber";
+import { Sidebar } from "primereact/sidebar";
 import { IMU_GLOBALS } from "../appRoute";
+import SimpleZero from "./algorithm/SimpleZero";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
   const [currentPosition, setCurrentPosition] = useState("");
 
   const [timeDesc, setTimeDesc] = useState("-1h");
-
-  const [displayBasic, setDisplayBasic] = useState(false);
 
   const [algorithm, setAlgorithm] = useState("simple_zero");
 
@@ -37,9 +35,10 @@ export default function AnalysesMain() {
   const [settingId, setSettingId] = useState("");
 
   const [algorithmParams, setAlgorithmParams] = useState({
-    simple_zero: { zeroFlag: 0.12, zeroAccount: 3 },
-    tow_way: { zeroFlag: 0.11, zeroAccount: 2, pt: 1.5, nt: 1.5 },
+    simple_zero: { zeroFlag: 0.12, zeroAccount: 3, pt: 1.5, nt: 1.5 },
   });
+
+  const [dataSet, setDataSet] = useState({});
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -67,8 +66,7 @@ export default function AnalysesMain() {
         setSettingId(setting.id);
       } else {
         setAlgorithmParams({
-          simple_zero: { zeroFlag: 0.12, zeroAccount: 3 },
-          tow_way: { zeroFlag: 0.11, zeroAccount: 2, pt: 1.5, nt: 1.5 },
+          simple_zero: { zeroFlag: 0.12, zeroAccount: 3, pt: 1.5, nt: 1.5 },
         });
       }
     }
@@ -122,7 +120,7 @@ export default function AnalysesMain() {
   const getAlgorithmName = () => {
     switch (algorithm) {
       case "simple_zero":
-        return "简单归零";
+        return "峰值划分";
       case "tow_way":
         return "双向启停";
       case "movement":
@@ -181,6 +179,8 @@ export default function AnalysesMain() {
                 if (rs.status == 200) {
                   let dataSet = await rs.json();
 
+                  setDataSet(dataSet);
+
                   calculateOriginLeft(dataSet["LEFT"]);
                   calculateOriginRight(dataSet["RIGHT"]);
                 }
@@ -191,16 +191,9 @@ export default function AnalysesMain() {
       ></Toolbar>
       <TabView>
         <TabPanel header="原始数据">
-          <p>直接展示传感器获取的原始数据</p>
-          <Fieldset legend="左手" toggleable className="mb-2">
-            <BigLineChart date={leftLabels} data={leftDataSet} />
-          </Fieldset>
-          <Fieldset legend="右手" toggleable>
-            <BigLineChart date={rightLabels} data={rightDataSet} />
-          </Fieldset>
+          <BigLineChart date={leftLabels} data={[leftDataSet, rightDataSet]} />
         </TabPanel>
         <TabPanel header="工作周期分析">
-          <p>根据不同的算法，进行工作周期分析。</p>
           <Toolbar
             left={
               <div>
@@ -211,8 +204,8 @@ export default function AnalysesMain() {
                   checked={algorithm === "simple_zero"}
                 />
                 &nbsp;
-                <span>简单归零</span>
-                &nbsp;&nbsp;&nbsp;
+                <span>峰值划分</span>
+                {/* &nbsp;&nbsp;&nbsp;
                 <RadioButton
                   name="algorithm"
                   value="tow_way"
@@ -220,7 +213,7 @@ export default function AnalysesMain() {
                   checked={algorithm === "tow_way"}
                 />
                 &nbsp;&nbsp;
-                <span>双向启停</span>
+                <span>双向启停</span> */}
               </div>
             }
             right={
@@ -241,13 +234,11 @@ export default function AnalysesMain() {
                   onClick={() => {
                     switch (algorithm) {
                       case "simple_zero":
-                        console.log(
-                          "simple_zero",
-                          "zeroFlag:",
-                          algorithmParams.simple_zero.zeroFlag,
-                          "zeroAccount:",
-                          algorithmParams.simple_zero.zeroAccount
-                        );
+                        let rs = SimpleZero(dataSet, {
+                          zeroFlag: algorithmParams.simple_zero.zeroFlag,
+                          zeroAccount: algorithmParams.simple_zero.zeroAccount,
+                        });
+
                         break;
                       case "tow_way":
                         break;
@@ -289,32 +280,30 @@ export default function AnalysesMain() {
               }}
             />
           </div>
-          {algorithm == "tow_way" && (
-            <div>
-              <div className="field">
-                <label>正向阈值：</label>
-                <InputNumber
-                  mode="decimal"
-                  minFractionDigits={2}
-                  value={algorithmParams[algorithm].pt}
-                  onChange={(e) => {
-                    algorithmParams[algorithm].pt = e.value;
-                  }}
-                />
-              </div>
-              <div className="field">
-                <label>负向阈值：</label>
-                <InputNumber
-                  mode="decimal"
-                  minFractionDigits={2}
-                  value={algorithmParams[algorithm].nt}
-                  onChange={(e) => {
-                    algorithmParams[algorithm].nt = e.value;
-                  }}
-                />
-              </div>
+          <div>
+            <div className="field">
+              <label>正向阈值：</label>
+              <InputNumber
+                mode="decimal"
+                minFractionDigits={2}
+                value={algorithmParams[algorithm].pt}
+                onChange={(e) => {
+                  algorithmParams[algorithm].pt = e.value;
+                }}
+              />
             </div>
-          )}
+            <div className="field">
+              <label>负向阈值：</label>
+              <InputNumber
+                mode="decimal"
+                minFractionDigits={2}
+                value={algorithmParams[algorithm].nt}
+                onChange={(e) => {
+                  algorithmParams[algorithm].nt = e.value;
+                }}
+              />
+            </div>
+          </div>
           <div className="mt-5" style={{ paddingLeft: "115px" }}>
             <Button
               label="保存"
