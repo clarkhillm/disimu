@@ -34,7 +34,7 @@ export default function AnalysesMain() {
   const [settingId, setSettingId] = useState("");
 
   const [algorithmParams, setAlgorithmParams] = useState({
-    simple_zero: { zeroFlag: 0.12, zeroAccount: 3, pt: 0.14, nt: 0.15 },
+    simple_zero: { zeroFlag: 1.2, zeroAccount: 3, pt: 0.14, nt: 0.15 },
   });
 
   const [dataSet, setDataSet] = useState([]);
@@ -349,18 +349,7 @@ export default function AnalysesMain() {
                           .sort()
                           .value();
 
-                        console.log("tttt", times);
-
-                        let ts = moment(
-                          _.last(times),
-                          "YYYY-MM-DD HH:mm:ss SSSS"
-                        ).diff(
-                          moment(_.first(times), "YYYY-MM-DD HH:mm:ss SSSS"),
-                          "minutes",
-                          true
-                        );
-
-                        return ts.toFixed(2);
+                        return calculate_time_diff(times);
                       })()}
                       分钟
                     </b>
@@ -369,16 +358,13 @@ export default function AnalysesMain() {
                         label="动作时间分析"
                         className="p-button-raised p-button-rounded p-button-sm"
                         onClick={() => {
-                          console.log(selectedCycle, "动作次数分析");
+                          //console.log(selectedCycle, "动作次数分析");
                           let rs = MoveAccount(
                             selectedCycle.dataSet,
                             algorithmParams.simple_zero
                           );
                           console.log(rs);
-                          console.log([
-                            (rs.lm.length / 120).toFixed(2),
-                            (rs.rm.length / 120).toFixed(2),
-                          ]);
+
                           setBasicData({
                             labels: ["左手", "右手"],
                             datasets: [
@@ -506,4 +492,14 @@ export default function AnalysesMain() {
       </Sidebar>
     </Card>
   );
+
+  function calculate_time_diff(timeSet) {
+    let lm = moment(_.last(timeSet), "YYYY-MM-DD HH:mm:ss SSSS").diff(
+      moment(_.first(timeSet), "YYYY-MM-DD HH:mm:ss SSSS"),
+      "minutes",
+      true
+    );
+
+    return lm.toFixed(2);
+  }
 }

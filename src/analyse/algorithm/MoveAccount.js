@@ -29,13 +29,13 @@ export default function MoveAccount(dataSet, params) {
 
     // console.log("-" + i + "-", leftSumSS / 5, rightSumSS / 5);
 
-    if (leftSumSS / 5 < params.zeroAccount) {
+    if (leftSumSS / 5 < params.zeroFlag) {
       stopAccountLeft.push(v);
     } else {
       moveAccountLeft.push(v);
     }
 
-    if (rightSumSS / 5 < params.zeroAccount) {
+    if (rightSumSS / 5 < params.zeroFlag) {
       stopAccountRight.push(v);
     } else {
       moveAccountRight.push(v);
