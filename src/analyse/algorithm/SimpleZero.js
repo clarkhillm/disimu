@@ -9,7 +9,12 @@ export default function SimpleZero(dataSet, params) {
 
   console.log(params);
 
+  let cycle_code = 0;
+  let cycle_dataSet = [];
+
   let cycle = { code: 0, dataSet: [], timeRange: [] };
+
+  let cycles = [];
 
   let watchSet = _.chunk(dataSet, 5);
 
@@ -19,6 +24,10 @@ export default function SimpleZero(dataSet, params) {
   _.each(watchSet, (v, i) => {
     // console.log(v);
     let ct = 0;
+
+    cycle_dataSet = _.concat(cycle_dataSet, v);
+
+    // log("cycle_dataSet:", cycle_dataSet);
 
     let leftSum = _.chain(v)
       .map((vi) => {
@@ -43,6 +52,16 @@ export default function SimpleZero(dataSet, params) {
       (leftSum / 10 > params.pt || rightSum / 10 > params.pt)
     ) {
       console.log("start:", _.first(v).time);
+      cycle_code += 1;
+
+      let cycle = {
+        code: cycle_code,
+        dataSet: [],
+        timeRange: [_.first(v).time],
+      };
+
+      cycles.push(cycle);
+
       ct = i;
       start_check_flag = false;
       end_check_flag = true;
@@ -66,10 +85,23 @@ export default function SimpleZero(dataSet, params) {
     if (end_check_flag && i != ct) {
       if (leftSumSS / 10 < params.nt && rightSumSS / 10 < params.nt) {
         console.log("end:", _.last(v).time);
+        _.each(cycles, (cycle) => {
+          if (cycle.code == cycle_code) {
+            cycle.dataSet = cycle_dataSet;
+            cycle.timeRange[1] = _.last(v).time;
+          }
+        });
+
+        cycle_dataSet = [];
+
         ct = i;
         start_check_flag = true;
         end_check_flag = false;
       }
     }
   });
+
+  console.log("cycles", cycles);
+
+  return cycles;
 }

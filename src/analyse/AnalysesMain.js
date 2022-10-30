@@ -14,6 +14,10 @@ import { InputNumber } from "primereact/inputnumber";
 import { Sidebar } from "primereact/sidebar";
 import { IMU_GLOBALS } from "../appRoute";
 import SimpleZero from "./algorithm/SimpleZero";
+import { Splitter, SplitterPanel } from "primereact/splitter";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { Divider } from "primereact/divider";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -28,10 +32,14 @@ export default function AnalysesMain() {
   const [settingId, setSettingId] = useState("");
 
   const [algorithmParams, setAlgorithmParams] = useState({
-    simple_zero: { zeroFlag: 0.12, zeroAccount: 3, pt: 1.5, nt: 1.5 },
+    simple_zero: { zeroFlag: 0.12, zeroAccount: 3, pt: 0.14, nt: 0.15 },
   });
 
   const [dataSet, setDataSet] = useState([]);
+
+  const [cycleSet, setCycleSet] = useState([]);
+
+  const [selectedCycle, setSelectedCycle] = useState(null);
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -236,6 +244,8 @@ export default function AnalysesMain() {
                           algorithmParams.simple_zero
                         );
 
+                        setCycleSet(rs);
+
                         break;
                       case "tow_way":
                         break;
@@ -247,6 +257,58 @@ export default function AnalysesMain() {
               </div>
             }
           ></Toolbar>
+          <Splitter style={{ height: "450px", marginTop: "10px" }}>
+            <SplitterPanel size={10} minSize={10}>
+              <DataTable
+                dataKey="code"
+                scrollable
+                scrollHeight="450px"
+                rowHover
+                header="运动周期"
+                value={cycleSet}
+                selectionMode="single"
+                onSelectionChange={(e) => {
+                  console.log(e.value);
+                  setSelectedCycle(e.value);
+                }}
+              >
+                <Column field="code" header="编号" />
+              </DataTable>
+            </SplitterPanel>
+            <SplitterPanel size={90} minSize={50}>
+              <div style={{ width: "1200px", margin: "5px" }}>
+                <Divider align="left">
+                  <div className="inline-flex align-items-center">
+                    <i className="pi pi-chart-line mr-2"></i>
+                    <b>
+                      第
+                      {(() => {
+                        if (selectedCycle != null) {
+                          return selectedCycle.code;
+                        }
+                        return "";
+                      })()}
+                      个周期
+                    </b>
+                    <b className="ml-5">
+                      <Button
+                        label="动作次数分析"
+                        className="p-button-raised p-button-rounded p-button-sm"
+                      />
+                    </b>
+                  </div>
+                </Divider>
+                <BigLineChart
+                  dataSource={(() => {
+                    if (selectedCycle != null) {
+                      return selectedCycle.dataSet;
+                    }
+                    return [];
+                  })()}
+                />
+              </div>
+            </SplitterPanel>
+          </Splitter>
         </TabPanel>
       </TabView>
       <Sidebar
