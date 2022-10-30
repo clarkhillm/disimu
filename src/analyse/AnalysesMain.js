@@ -252,27 +252,6 @@ export default function AnalysesMain() {
           <Toolbar
             left={
               <div>
-                <RadioButton
-                  name="algorithm"
-                  value="simple_zero"
-                  onChange={(e) => setAlgorithm(e.value)}
-                  checked={algorithm === "simple_zero"}
-                />
-                &nbsp;
-                <span>峰值划分</span>
-                {/* &nbsp;&nbsp;&nbsp;
-                <RadioButton
-                  name="algorithm"
-                  value="tow_way"
-                  onChange={(e) => setAlgorithm(e.value)}
-                  checked={algorithm === "tow_way"}
-                />
-                &nbsp;&nbsp;
-                <span>双向启停</span> */}
-              </div>
-            }
-            right={
-              <div>
                 <Button
                   label="参数"
                   className="p-button-sm p-button-rounded p-button-warning"
