@@ -1,9 +1,5 @@
 import _ from "lodash";
 
-const log = (title, value) => {
-  console.log("algorithm.SimpleZero." + title, value);
-};
-
 export default function SimpleZero(dataSet, params) {
   //   console.log("dataSet:", dataSet);
 
@@ -11,8 +7,6 @@ export default function SimpleZero(dataSet, params) {
 
   let cycle_code = 0;
   let cycle_dataSet = [];
-
-  let cycle = { code: 0, dataSet: [], timeRange: [] };
 
   let cycles = [];
 
@@ -51,7 +45,7 @@ export default function SimpleZero(dataSet, params) {
       i != ct &&
       (leftSum / 10 > params.pt || rightSum / 10 > params.pt)
     ) {
-      console.log("start:", _.first(v).time);
+      // console.log("start:", _.first(v).time);
       cycle_code += 1;
 
       let cycle = {
@@ -84,7 +78,7 @@ export default function SimpleZero(dataSet, params) {
 
     if (end_check_flag && i != ct) {
       if (leftSumSS / 10 < params.nt && rightSumSS / 10 < params.nt) {
-        console.log("end:", _.last(v).time);
+        // console.log("end:", _.last(v).time);
         _.each(cycles, (cycle) => {
           if (cycle.code == cycle_code) {
             cycle.dataSet = cycle_dataSet;
@@ -101,7 +95,7 @@ export default function SimpleZero(dataSet, params) {
     }
   });
 
-  console.log("cycles", cycles);
+  // console.log("cycles", cycles);
 
   return cycles;
 }

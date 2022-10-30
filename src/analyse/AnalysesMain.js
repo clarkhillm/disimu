@@ -10,14 +10,16 @@ import React, { useEffect, useState } from "react";
 import { appFetch } from "../utils";
 import BigLineChart from "./BigLineChart";
 
-import { InputNumber } from "primereact/inputnumber";
-import { Sidebar } from "primereact/sidebar";
-import { IMU_GLOBALS } from "../appRoute";
-import SimpleZero from "./algorithm/SimpleZero";
-import { Splitter, SplitterPanel } from "primereact/splitter";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Divider } from "primereact/divider";
+import { InputNumber } from "primereact/inputnumber";
+import { Sidebar } from "primereact/sidebar";
+import { Splitter, SplitterPanel } from "primereact/splitter";
+import { IMU_GLOBALS } from "../appRoute";
+import SimpleZero from "./algorithm/SimpleZero";
+import MoveAccount from "./algorithm/MoveAccount";
+import { Chart } from "primereact/chart";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -40,6 +42,53 @@ export default function AnalysesMain() {
   const [cycleSet, setCycleSet] = useState([]);
 
   const [selectedCycle, setSelectedCycle] = useState(null);
+  const [visibleFullScreen, setVisibleFullScreen] = useState(false);
+
+  let basicOptions = {
+    maintainAspectRatio: false,
+    aspectRatio: 0.8,
+    plugins: {
+      legend: {
+        labels: {
+          color: "#495057",
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: "#495057",
+        },
+        grid: {
+          color: "#ebedef",
+        },
+      },
+      y: {
+        ticks: {
+          color: "#495057",
+        },
+        grid: {
+          color: "#ebedef",
+        },
+      },
+    },
+  };
+
+  const [basicData, setBasicData] = useState({
+    labels: ["左手", "右手"],
+    datasets: [
+      {
+        label: "运动",
+        backgroundColor: "#00FF00",
+        data: [],
+      },
+      {
+        label: "停止",
+        backgroundColor: "#FF0000",
+        data: [],
+      },
+    ],
+  });
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -276,7 +325,7 @@ export default function AnalysesMain() {
               </DataTable>
             </SplitterPanel>
             <SplitterPanel size={90} minSize={50}>
-              <div style={{ width: "1200px", margin: "5px" }}>
+              <div style={{ width: "1300px", margin: "5px" }}>
                 <Divider align="left">
                   <div className="inline-flex align-items-center">
                     <i className="pi pi-chart-line mr-2"></i>
@@ -288,12 +337,71 @@ export default function AnalysesMain() {
                         }
                         return "";
                       })()}
-                      个周期
+                      个周期 总时长
+                      {(() => {
+                        if (selectedCycle == null) {
+                          return 0;
+                        }
+                        let times = _.chain(selectedCycle.dataSet)
+                          .map((vt) => {
+                            return vt.time;
+                          })
+                          .sort()
+                          .value();
+
+                        console.log("tttt", times);
+
+                        let ts = moment(
+                          _.last(times),
+                          "YYYY-MM-DD HH:mm:ss SSSS"
+                        ).diff(
+                          moment(_.first(times), "YYYY-MM-DD HH:mm:ss SSSS"),
+                          "minutes",
+                          true
+                        );
+
+                        return ts.toFixed(2);
+                      })()}
+                      分钟
                     </b>
                     <b className="ml-5">
                       <Button
-                        label="动作次数分析"
+                        label="动作时间分析"
                         className="p-button-raised p-button-rounded p-button-sm"
+                        onClick={() => {
+                          console.log(selectedCycle, "动作次数分析");
+                          let rs = MoveAccount(
+                            selectedCycle.dataSet,
+                            algorithmParams.simple_zero
+                          );
+                          console.log(rs);
+                          console.log([
+                            (rs.lm.length / 120).toFixed(2),
+                            (rs.rm.length / 120).toFixed(2),
+                          ]);
+                          setBasicData({
+                            labels: ["左手", "右手"],
+                            datasets: [
+                              {
+                                label: "运动",
+                                backgroundColor: "#00FF00",
+                                data: [
+                                  (rs.lm.length / 120).toFixed(2),
+                                  (rs.rm.length / 120).toFixed(2),
+                                ],
+                              },
+                              {
+                                label: "停止",
+                                backgroundColor: "#FF0000",
+                                data: [
+                                  (rs.ls.length / 120).toFixed(2),
+                                  (rs.rs.length / 120).toFixed(2),
+                                ],
+                              },
+                            ],
+                          });
+                          setVisibleFullScreen(true);
+                        }}
                       />
                     </b>
                   </div>
@@ -373,6 +481,28 @@ export default function AnalysesMain() {
             />
           </div>
         </div>
+      </Sidebar>
+      <Sidebar
+        visible={visibleFullScreen}
+        fullScreen
+        onHide={() => setVisibleFullScreen(false)}
+      >
+        <h3>
+          第
+          {(() => {
+            if (selectedCycle != null) {
+              return selectedCycle.code;
+            }
+            return "";
+          })()}
+          个周期 动作时长分析(单位：分钟)
+        </h3>
+        <Chart
+          height="500px"
+          type="bar"
+          data={basicData}
+          options={basicOptions}
+        />
       </Sidebar>
     </Card>
   );

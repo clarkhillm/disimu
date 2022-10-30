@@ -74,7 +74,7 @@ export default function BigLineChart(props) {
       myChart = echarts.init(chartRef.current);
     }
 
-    console.log(props.dataSource);
+    // console.log(props.dataSource);
 
     option.dataset.source = props.dataSource;
 
