@@ -109,7 +109,7 @@ export default function PositionMain() {
         responsiveLayout="scroll"
         emptyMessage="没有数据"
       >
-        <Column header="员工姓名" field="name" sortable />
+        <Column header="工位名称" field="name" sortable />
         <Column header="工位编号" field="code" sortable />
         <Column header="创建日期" field="dtCreated" sortable />
         <Column header="更新日期" field="dtUpdated" sortable />

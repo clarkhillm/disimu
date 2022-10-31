@@ -12,11 +12,13 @@ import { IMU_GLOBALS } from "../appRoute";
 import { appFetch } from "../utils";
 import { list } from "./service";
 import { Dropdown } from "primereact/dropdown";
+import _ from "lodash";
 
 export default function DevMain() {
   const [devList, setDevList] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [positionList, setPositionList] = useState([]);
+  const [positionOriginList, setPositionOriginList] = useState([]);
 
   const wristItems = [
     { label: "左手", value: "LEFT" },
@@ -32,6 +34,7 @@ export default function DevMain() {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
     if (rs.status == 200) {
       let d_ = await rs.json();
+      setPositionOriginList(d_);
       setPositionList(
         _.map(d_, (item) => {
           return {
@@ -139,7 +142,30 @@ export default function DevMain() {
       >
         <Column header="ID" field="devId" sortable />
         <Column header="端口" field="measurement" sortable />
-        <Column header="工位" field="position" sortable />
+        <Column
+          header="工位编号"
+          body={(rowdata) => {
+            let value = _.chain(positionOriginList)
+              .filter((p) => {
+                return p.id === rowdata.position;
+              })
+              .value();
+            return <div>{value.length > 0 ? _.first(value).code : ""}</div>;
+          }}
+          sortable
+        />
+        <Column
+          header="工位名称"
+          body={(rowdata) => {
+            let value = _.chain(positionOriginList)
+              .filter((p) => {
+                return p.id === rowdata.position;
+              })
+              .value();
+            return <div>{value.length > 0 ? _.first(value).name : ""}</div>;
+          }}
+          sortable
+        />
         <Column header="手腕" field="wrist" sortable />
         <Column header="创建日期" field="dtCreated" sortable />
         <Column header="更新日期" field="dtUpdated" sortable />
