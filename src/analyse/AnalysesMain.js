@@ -189,6 +189,8 @@ export default function AnalysesMain() {
               name="position"
               value={timeDesc}
               options={[
+                { label: "过去15分钟", value: "-15m" },
+                { label: "过去30分钟", value: "-30m" },
                 { label: "过去1小时", value: "-1h" },
                 { label: "过去2小时", value: "-2h" },
                 { label: "过去3小时", value: "-3h" },
