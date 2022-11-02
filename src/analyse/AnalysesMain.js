@@ -20,12 +20,13 @@ import { IMU_GLOBALS } from "../appRoute";
 import SimpleZero from "./algorithm/SimpleZero";
 import MoveAccount from "./algorithm/MoveAccount";
 import { Chart } from "primereact/chart";
+import { Calendar } from "primereact/calendar";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
   const [currentPosition, setCurrentPosition] = useState("");
 
-  const [timeDesc, setTimeDesc] = useState("-1h");
+  const [timeDesc, setTimeDesc] = useState([]);
 
   const [algorithm, setAlgorithm] = useState("simple_zero");
 
@@ -185,27 +186,14 @@ export default function AnalysesMain() {
             />
             &nbsp;&nbsp;&nbsp;
             <span>时间范围：</span>
-            <Dropdown
-              name="position"
+            <Calendar
+              style={{ width: "300px" }}
               value={timeDesc}
-              options={[
-                { label: "过去15分钟", value: "-15m" },
-                { label: "过去30分钟", value: "-30m" },
-                { label: "过去1小时", value: "-1h" },
-                { label: "过去2小时", value: "-2h" },
-                { label: "过去3小时", value: "-3h" },
-                { label: "过去4小时", value: "-4h" },
-                { label: "过去5小时", value: "-5h" },
-                { label: "过去8小时", value: "-8h" },
-                { label: "过去1天", value: "-1d" },
-                { label: "过去2天", value: "-2d" },
-                { label: "过去3天", value: "-3d" },
-                { label: "过去4天", value: "-4d" },
-                { label: "过去5天", value: "-5d" },
-              ]}
-              onChange={(e) => {
-                setTimeDesc(e.value);
-              }}
+              onChange={(e) => setTimeDesc(e.value)}
+              selectionMode="range"
+              showTime
+              showSeconds
+              readOnlyInput
             />
             &nbsp;&nbsp;&nbsp;
             <Button
@@ -213,8 +201,18 @@ export default function AnalysesMain() {
               className="p-button-rounded"
               onClick={async () => {
                 let rs = await appFetch(
-                  `/imu/analyses/query/${currentPosition}?timeDesc=${timeDesc}`,
-                  { method: "GET" }
+                  `/imu/analyses/query/${currentPosition}?timeRange=start:${moment(
+                    timeDesc[0]
+                  )
+                    .utc()
+                    .format("YYYY-MM-DDTHH:mm:ss[Z]")},stop:${moment(
+                    timeDesc[1]
+                  )
+                    .utc()
+                    .format("YYYY-MM-DDTHH:mm:ss[Z]")}`,
+                  {
+                    method: "GET",
+                  }
                 );
                 if (rs.status == 200) {
                   let dataSet = await rs.json();
