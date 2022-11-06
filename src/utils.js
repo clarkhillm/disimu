@@ -1,4 +1,5 @@
 import _ from "lodash";
+import moment from "moment/moment";
 
 export function hexTransform(i) {
   let two = parseInt(i, 16).toString(2);
@@ -42,4 +43,14 @@ export async function appFetch(url, options) {
     )
   );
   return response;
+}
+
+export function calculate_time_diff(timeSet) {
+  let lm = moment(_.last(timeSet), "YYYY-MM-DD HH:mm:ss SSSS").diff(
+    moment(_.first(timeSet), "YYYY-MM-DD HH:mm:ss SSSS"),
+    "minutes",
+    true
+  );
+
+  return lm.toFixed(2);
 }

@@ -10,7 +10,7 @@ export default function SimpleZero(dataSet, params) {
 
   let cycles = [];
 
-  let watchSet = _.chunk(dataSet, 5);
+  let watchSet = _.chunk(dataSet, 10);
 
   let start_check_flag = true;
   let end_check_flag = false;

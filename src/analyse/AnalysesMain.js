@@ -3,24 +3,28 @@ import moment from "moment/moment";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Dropdown } from "primereact/dropdown";
-import { RadioButton } from "primereact/radiobutton";
 import { TabPanel, TabView } from "primereact/tabview";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
 import { appFetch } from "../utils";
 import BigLineChart from "./BigLineChart";
 
+import { Calendar } from "primereact/calendar";
+import { Chart } from "primereact/chart";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Divider } from "primereact/divider";
 import { InputNumber } from "primereact/inputnumber";
+import { PanelMenu } from "primereact/panelmenu";
 import { Sidebar } from "primereact/sidebar";
 import { Splitter, SplitterPanel } from "primereact/splitter";
 import { IMU_GLOBALS } from "../appRoute";
-import SimpleZero from "./algorithm/SimpleZero";
 import MoveAccount from "./algorithm/MoveAccount";
-import { Chart } from "primereact/chart";
-import { Calendar } from "primereact/calendar";
+import SimpleZero from "./algorithm/SimpleZero";
+import { Tag } from "primereact/tag";
+import { Tooltip } from "primereact/tooltip";
+import CycleRateOfChange from "./algorithm/CycleRateOfChange";
+import CycleExtremum from "./algorithm/CylcleExtremum";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -44,6 +48,81 @@ export default function AnalysesMain() {
 
   const [selectedCycle, setSelectedCycle] = useState(null);
   const [visibleFullScreen, setVisibleFullScreen] = useState(false);
+
+  const [algorithmTitle, setAlgorithmTitle] = useState("请选择一个算法");
+  const [algorithmDescription, setAlgorithmDescription] = useState("");
+
+  const [items, setItems] = useState([
+    {
+      label: "周期分析算法",
+      icon: "pi pi-fw pi-chart-line",
+      items: [
+        {
+          label: "加速度变化率",
+          icon: "pi pi-fw pi-chevron-circle-right",
+          command: () => {
+            setAlgorithmTitle("加速度变化率");
+            setAlgorithmDescription("根据加速度的变化率来分析周期的起始情况。");
+          },
+        },
+        {
+          label: "双手正向极值",
+          icon: "pi pi-fw pi-chevron-circle-right",
+          command: () => {
+            setAlgorithmTitle("双手正向极值");
+            setAlgorithmDescription(
+              <div>
+                根据加速度的双手正向最大值来分析周期的起始情况。
+                <p>
+                  在休息的状态下，当双手同时产生一个向前的加速度时，就判定为工作周期开始。
+                  两个手同时产生一个向后的加速度，然后当手停止后，n秒钟后任然是停止状态，
+                  那么就判定这个时候为休息状态，当双手同时产生一个向前的加速度时，本周期结束。
+                </p>
+              </div>
+            );
+          },
+        },
+        {
+          label: "停止时间",
+          icon: "pi pi-fw pi-chevron-circle-right",
+          command: () => {
+            setAlgorithmTitle("停止时间");
+            setAlgorithmDescription(
+              <div>根据加速度的归零时间来分析周期的起始情况。</div>
+            );
+          },
+        },
+      ],
+    },
+    {
+      label: "动作判定算法",
+      icon: "pi pi-fw pi-sort-alt",
+      items: [
+        {
+          label: "运动判定",
+          icon: "pi pi-fw pi-chevron-circle-right",
+        },
+        {
+          label: "停止判定",
+          icon: "pi pi-fw pi-chevron-circle-right",
+        },
+      ],
+    },
+    {
+      label: "结论数据分析",
+      icon: "pi pi-fw pi-file",
+      items: [
+        {
+          label: "有效工作时间",
+          icon: "pi pi-fw pi-chevron-circle-right",
+        },
+        {
+          label: "休息时间",
+          icon: "pi pi-fw pi-chevron-circle-right",
+        },
+      ],
+    },
+  ]);
 
   let basicOptions = {
     maintainAspectRatio: false,
@@ -193,7 +272,6 @@ export default function AnalysesMain() {
               selectionMode="range"
               showTime
               showSeconds
-              readOnlyInput
             />
             &nbsp;&nbsp;&nbsp;
             <Button
@@ -218,7 +296,6 @@ export default function AnalysesMain() {
                   let dataSet = await rs.json();
 
                   let dataSource = [];
-                  // 合并左右手数据，以左手为主。
 
                   let left_ds = calculateOrigin(dataSet["LEFT"]);
                   let right_ds = calculateOrigin(dataSet["RIGHT"]);
@@ -248,7 +325,7 @@ export default function AnalysesMain() {
         <TabPanel header="原始数据">
           <BigLineChart dataSource={dataSet} />
         </TabPanel>
-        <TabPanel header="工作周期分析">
+        <TabPanel header="工作周期分析" disabled={true}>
           <Toolbar
             left={
               <div>
@@ -382,6 +459,35 @@ export default function AnalysesMain() {
               </div>
             </SplitterPanel>
           </Splitter>
+        </TabPanel>
+        <TabPanel header="分析算法">
+          <div className="flex">
+            <PanelMenu model={items} style={{ width: "15rem" }} />
+            <Card
+              title={algorithmTitle}
+              subTitle={algorithmDescription}
+              className="w-full ml-2"
+            >
+              {(() => {
+                switch (algorithmTitle) {
+                  case "加速度变化率":
+                    return (
+                      <div>
+                        <CycleRateOfChange dataSet={dataSet} />
+                      </div>
+                    );
+                  case "双手正向极值":
+                    return (
+                      <div>
+                        <CycleExtremum dataSet={dataSet} />
+                      </div>
+                    );
+                  default:
+                    return "";
+                }
+              })()}
+            </Card>
+          </div>
         </TabPanel>
       </TabView>
       <Sidebar
