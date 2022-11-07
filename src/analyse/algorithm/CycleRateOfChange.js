@@ -8,6 +8,8 @@ import CycleDataView from "./CycleDataView";
 import SimpleZero from "./SimpleZero";
 
 export default function CycleRateOfChange(props) {
+  const { setCycleData } = props;
+
   const [pt, setPt] = useState(0.15);
   const [nt, setNt] = useState(0.15);
   const [result, setResult] = useState([]);
@@ -51,6 +53,7 @@ export default function CycleRateOfChange(props) {
                 let rs = SimpleZero(props.dataSet, { pt: pt, nt: nt });
                 console.log(rs);
                 setResult(rs);
+                setCycleData(rs);
               }}
             />
           </React.Fragment>

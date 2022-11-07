@@ -19,12 +19,12 @@ import { PanelMenu } from "primereact/panelmenu";
 import { Sidebar } from "primereact/sidebar";
 import { Splitter, SplitterPanel } from "primereact/splitter";
 import { IMU_GLOBALS } from "../appRoute";
-import MoveAccount from "./algorithm/MoveAccount";
-import SimpleZero from "./algorithm/SimpleZero";
-import { Tag } from "primereact/tag";
-import { Tooltip } from "primereact/tooltip";
 import CycleRateOfChange from "./algorithm/CycleRateOfChange";
 import CycleExtremum from "./algorithm/CylcleExtremum";
+import MoveAccount from "./algorithm/MoveAccount";
+import MoveJudge from "./algorithm/MoveJudge";
+import SimpleZero from "./algorithm/SimpleZero";
+import WorkTime from "./algorithm/WorkTime";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -51,6 +51,8 @@ export default function AnalysesMain() {
 
   const [algorithmTitle, setAlgorithmTitle] = useState("请选择一个算法");
   const [algorithmDescription, setAlgorithmDescription] = useState("");
+
+  const [cycleData, setCycleData] = useState([]);
 
   const [items, setItems] = useState([
     {
@@ -99,12 +101,20 @@ export default function AnalysesMain() {
       icon: "pi pi-fw pi-sort-alt",
       items: [
         {
-          label: "运动判定",
+          label: "运动/停止判定",
           icon: "pi pi-fw pi-chevron-circle-right",
-        },
-        {
-          label: "停止判定",
-          icon: "pi pi-fw pi-chevron-circle-right",
+          command: () => {
+            setAlgorithmTitle("运动/停止判定");
+            setAlgorithmDescription(
+              <div>
+                根据加速度判断载体的运动和停止情况。
+                <p>
+                  工作周期内，当有一个向前或者向后的加速度大于某一个数值时，就判定为
+                  手是动作状态。当手运动的时候加速度小于某一个数值时，就判定手为停止状态。
+                </p>
+              </div>
+            );
+          },
         },
       ],
     },
@@ -113,12 +123,20 @@ export default function AnalysesMain() {
       icon: "pi pi-fw pi-file",
       items: [
         {
-          label: "有效工作时间",
+          label: "有效工作/休息时间",
           icon: "pi pi-fw pi-chevron-circle-right",
-        },
-        {
-          label: "休息时间",
-          icon: "pi pi-fw pi-chevron-circle-right",
+          command: () => {
+            setAlgorithmTitle("有效工作/休息时间");
+            setAlgorithmDescription(
+              <div>
+                计算有效的工作时间和休息时间。
+                <p>
+                  在工作周期内，从周期开始到两个手开始动，到两个手停止工作这段时间内所有手动的时间和停止时间都加在一起，就是有效工作时间。
+                  在工作周期内，从两个手停止工作开始，到下一个工作周期开始这段时间，就是休息时间。
+                </p>
+              </div>
+            );
+          },
         },
       ],
     },
@@ -325,7 +343,7 @@ export default function AnalysesMain() {
         <TabPanel header="原始数据">
           <BigLineChart dataSource={dataSet} />
         </TabPanel>
-        <TabPanel header="工作周期分析" disabled={true}>
+        {/* <TabPanel header="工作周期分析" disabled={true}>
           <Toolbar
             left={
               <div>
@@ -459,7 +477,7 @@ export default function AnalysesMain() {
               </div>
             </SplitterPanel>
           </Splitter>
-        </TabPanel>
+        </TabPanel> */}
         <TabPanel header="分析算法">
           <div className="flex">
             <PanelMenu model={items} style={{ width: "15rem" }} />
@@ -473,13 +491,31 @@ export default function AnalysesMain() {
                   case "加速度变化率":
                     return (
                       <div>
-                        <CycleRateOfChange dataSet={dataSet} />
+                        <CycleRateOfChange
+                          dataSet={dataSet}
+                          setCycleData={setCycleData}
+                        />
                       </div>
                     );
                   case "双手正向极值":
                     return (
                       <div>
-                        <CycleExtremum dataSet={dataSet} />
+                        <CycleExtremum
+                          dataSet={dataSet}
+                          setCycleData={setCycleData}
+                        />
+                      </div>
+                    );
+                  case "运动/停止判定":
+                    return (
+                      <div>
+                        <MoveJudge dataSet={dataSet} cycleData={cycleData} />
+                      </div>
+                    );
+                  case "有效工作/休息时间":
+                    return (
+                      <div>
+                        <WorkTime cycleData={cycleData} />
                       </div>
                     );
                   default:

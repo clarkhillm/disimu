@@ -6,6 +6,8 @@ import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
 import CycleDataView from "./CycleDataView";
 export default function CycleExtremum(props) {
+  const { setCycleData } = props;
+
   const [result, setResult] = useState([]);
   const [pt, setPt] = useState(0.2);
   const [zero, setZero] = useState(0.12);
@@ -152,6 +154,7 @@ export default function CycleExtremum(props) {
               onClick={() => {
                 let rs = calculate();
                 setResult(rs);
+                setCycleData(rs);
               }}
             />
           </React.Fragment>
