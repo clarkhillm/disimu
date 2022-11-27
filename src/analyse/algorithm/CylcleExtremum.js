@@ -44,8 +44,7 @@ export default function CycleExtremum(props) {
       let diff = moment(v.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
         moment(acc.time, "YYYY-MM-DD HH:mm:ss SSSS")
       );
-      //   console.log(diff, acc, v);
-      if (diff < 5000) {
+      if (diff < zeroAccount * 100) {
         zero_set.push(acc);
       } else {
         zero_group.push(zero_set);
@@ -53,7 +52,7 @@ export default function CycleExtremum(props) {
       }
       return v;
     });
-
+    
     zero_group = _.filter(zero_group, (v) => {
       return v.length >= zeroAccount;
     });
