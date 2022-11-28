@@ -25,6 +25,7 @@ import MoveAccount from "./algorithm/MoveAccount";
 import MoveJudge from "./algorithm/MoveJudge";
 import SimpleZero from "./algorithm/SimpleZero";
 import WorkTime from "./algorithm/WorkTime";
+import HallSensor from "./algorithm/HallSensor";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -85,12 +86,12 @@ export default function AnalysesMain() {
           },
         },
         {
-          label: "停止时间",
+          label: "霍尔传感器",
           icon: "pi pi-fw pi-chevron-circle-right",
           command: () => {
-            setAlgorithmTitle("停止时间");
+            setAlgorithmTitle("霍尔");
             setAlgorithmDescription(
-              <div>根据加速度的归零时间来分析周期的起始情况。</div>
+              <div>根据霍尔传感器的数据来分析周期的起始情况。</div>
             );
           },
         },
@@ -317,11 +318,13 @@ export default function AnalysesMain() {
 
                   let left_ds = calculateOrigin(dataSet["LEFT"]);
                   let right_ds = calculateOrigin(dataSet["RIGHT"]);
+                  let cycle_ds = calculateOrigin(dataSet["cycle"]);
 
                   _.each(left_ds.label, (v, i) => {
                     let data = {
                       time: v.format("YYYY-MM-DD HH:mm:ss SSSS"),
                       left: left_ds.data[i],
+                      cycle: 0,
                     };
                     _.each(right_ds.label, (vv, j) => {
                       if (Math.abs(v.diff(vv)) < 100) {
@@ -329,6 +332,13 @@ export default function AnalysesMain() {
                         data.right = right_ds.data[j];
                       }
                     });
+
+                    _.each(cycle_ds.label, (vvv, k) => {
+                      if (Math.abs(v.diff(vvv)) < 100) {
+                        data.cycle = cycle_ds.data[k] / 10;
+                      }
+                    });
+
                     dataSource.push(data);
                   });
 
@@ -343,141 +353,6 @@ export default function AnalysesMain() {
         <TabPanel header="原始数据">
           <BigLineChart dataSource={dataSet} />
         </TabPanel>
-        {/* <TabPanel header="工作周期分析" disabled={true}>
-          <Toolbar
-            left={
-              <div>
-                <Button
-                  label="参数"
-                  className="p-button-sm p-button-rounded p-button-warning"
-                  disabled={currentPosition == ""}
-                  onClick={() => {
-                    setVisibleRight(true);
-                  }}
-                />
-                &nbsp;&nbsp;
-                <Button
-                  label="分析"
-                  className="p-button-sm p-button-rounded  p-button-success"
-                  onClick={() => {
-                    switch (algorithm) {
-                      case "simple_zero":
-                        let rs = SimpleZero(
-                          dataSet,
-                          algorithmParams.simple_zero
-                        );
-
-                        setCycleSet(rs);
-
-                        break;
-                      case "tow_way":
-                        break;
-                      case "movement":
-                        return "运动方向";
-                    }
-                  }}
-                />
-              </div>
-            }
-          ></Toolbar>
-          <Splitter style={{ height: "450px", marginTop: "10px" }}>
-            <SplitterPanel size={10} minSize={10}>
-              <DataTable
-                dataKey="code"
-                scrollable
-                scrollHeight="450px"
-                rowHover
-                header="运动周期"
-                value={cycleSet}
-                selectionMode="single"
-                onSelectionChange={(e) => {
-                  console.log(e.value);
-                  setSelectedCycle(e.value);
-                }}
-              >
-                <Column field="code" header="编号" />
-              </DataTable>
-            </SplitterPanel>
-            <SplitterPanel size={90} minSize={50}>
-              <div style={{ width: "1300px", margin: "5px" }}>
-                <Divider align="left">
-                  <div className="inline-flex align-items-center">
-                    <i className="pi pi-chart-line mr-2"></i>
-                    <b>
-                      第
-                      {(() => {
-                        if (selectedCycle != null) {
-                          return selectedCycle.code;
-                        }
-                        return "";
-                      })()}
-                      个周期 总时长
-                      {(() => {
-                        if (selectedCycle == null) {
-                          return 0;
-                        }
-                        let times = _.chain(selectedCycle.dataSet)
-                          .map((vt) => {
-                            return vt.time;
-                          })
-                          .sort()
-                          .value();
-
-                        return calculate_time_diff(times);
-                      })()}
-                      分钟
-                    </b>
-                    <b className="ml-5">
-                      <Button
-                        label="动作时间分析"
-                        className="p-button-raised p-button-rounded p-button-sm"
-                        onClick={() => {
-                          //console.log(selectedCycle, "动作次数分析");
-                          let rs = MoveAccount(
-                            selectedCycle.dataSet,
-                            algorithmParams.simple_zero
-                          );
-                          console.log(rs);
-
-                          setBasicData({
-                            labels: ["左手", "右手"],
-                            datasets: [
-                              {
-                                label: "运动",
-                                backgroundColor: "#00FF00",
-                                data: [
-                                  (rs.lm.length / 120).toFixed(2),
-                                  (rs.rm.length / 120).toFixed(2),
-                                ],
-                              },
-                              {
-                                label: "停止",
-                                backgroundColor: "#FF0000",
-                                data: [
-                                  (rs.ls.length / 120).toFixed(2),
-                                  (rs.rs.length / 120).toFixed(2),
-                                ],
-                              },
-                            ],
-                          });
-                          setVisibleFullScreen(true);
-                        }}
-                      />
-                    </b>
-                  </div>
-                </Divider>
-                <BigLineChart
-                  dataSource={(() => {
-                    if (selectedCycle != null) {
-                      return selectedCycle.dataSet;
-                    }
-                    return [];
-                  })()}
-                />
-              </div>
-            </SplitterPanel>
-          </Splitter>
-        </TabPanel> */}
         <TabPanel header="分析算法">
           <div className="flex">
             <PanelMenu model={items} style={{ width: "15rem" }} />
@@ -501,6 +376,15 @@ export default function AnalysesMain() {
                     return (
                       <div>
                         <CycleExtremum
+                          dataSet={dataSet}
+                          setCycleData={setCycleData}
+                        />
+                      </div>
+                    );
+                  case "霍尔":
+                    return (
+                      <div>
+                        <HallSensor
                           dataSet={dataSet}
                           setCycleData={setCycleData}
                         />

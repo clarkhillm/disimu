@@ -48,7 +48,7 @@ export default function BigLineChart(props) {
       },
     ],
     dataset: {
-      dimensions: ["time", "left", "right"],
+      dimensions: ["time", "left", "right", "cycle"],
       source: [],
     },
     series: [
@@ -62,6 +62,12 @@ export default function BigLineChart(props) {
         //symbol: "none",
         sampling: "lttb",
       },
+      {
+        type: "line",
+        //symbol: "none",
+        sampling: "lttb",
+      },
+      ,
       ,
     ],
   };
