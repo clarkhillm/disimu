@@ -109,6 +109,7 @@ export default function WorkTime(props) {
               minFractionDigits={2}
               value={stop}
               onChange={(e) => {
+                console.log("stop", e.value);
                 setStop(e.value);
               }}
             />

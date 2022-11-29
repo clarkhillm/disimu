@@ -1,7 +1,6 @@
 import _ from "lodash";
 import moment from "moment";
 import { Button } from "primereact/button";
-import { InputNumber } from "primereact/inputnumber";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useState } from "react";
 import CycleDataView from "./CycleDataView";
@@ -55,7 +54,7 @@ export default function HallSensor(props) {
 
     let rs = [];
     let cycleData = [];
-    _.each(props.dataSet, (data) => {
+    _.each(_.cloneDeep(props.dataSet), (data) => {
       if (pointIndex + 1 < cyclePointSet.length) {
         let diff0 = moment(data.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
           moment(cyclePointSet[pointIndex].time, "YYYY-MM-DD HH:mm:ss SSSS")
@@ -85,7 +84,7 @@ export default function HallSensor(props) {
     });
 
     rs = [];
-    _.each(props.dataSet, (data) => {
+    _.each(_.cloneDeep(props.dataSet), (data) => {
       let diff0 = moment(data.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
         moment(_.last(cyclePointSet).time, "YYYY-MM-DD HH:mm:ss SSSS")
       );

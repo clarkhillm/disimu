@@ -124,13 +124,13 @@ export default function AnalysesMain() {
       icon: "pi pi-fw pi-file",
       items: [
         {
-          label: "有效工作/休息时间",
+          label: "有效工作/休息时间(按周期）",
           icon: "pi pi-fw pi-chevron-circle-right",
           command: () => {
             setAlgorithmTitle("有效工作/休息时间");
             setAlgorithmDescription(
               <div>
-                计算有效的工作时间和休息时间。
+                按照周期划分计算有效的工作时间和休息时间。
                 <p>
                   在工作周期内，从周期开始到两个手开始动，到两个手停止工作这段时间内所有手动的时间和停止时间都加在一起，就是有效工作时间。
                   在工作周期内，从两个手停止工作开始，到下一个工作周期开始这段时间，就是休息时间。
@@ -139,6 +139,22 @@ export default function AnalysesMain() {
             );
           },
         },
+        // {
+        //   label: "有效时间（总计）",
+        //   icon: "pi pi-box pi-chevron-circle-right",
+        //   command: () => {
+        //     setAlgorithmTitle("总计");
+        //     setAlgorithmDescription(
+        //       <div>
+        //         计算统计所有周期的有效的工作时间和休息时间。
+        //         <p>
+        //           在工作周期内，从周期开始到两个手开始动，到两个手停止工作这段时间内所有手动的时间和停止时间都加在一起，就是有效工作时间。
+        //           在工作周期内，从两个手停止工作开始，到下一个工作周期开始这段时间，就是休息时间。
+        //         </p>
+        //       </div>
+        //     );
+        //   },
+        // },
       ],
     },
   ]);
@@ -402,6 +418,8 @@ export default function AnalysesMain() {
                         <WorkTime cycleData={cycleData} />
                       </div>
                     );
+                    case "总计":
+                      return <div>总计</div>
                   default:
                     return "";
                 }
