@@ -1,5 +1,4 @@
 import _ from "lodash";
-import moment from "moment";
 import { Button } from "primereact/button";
 import { Chart } from "primereact/chart";
 import { Divider } from "primereact/divider";
@@ -7,7 +6,9 @@ import { InputNumber } from "primereact/inputnumber";
 import React, { useState } from "react";
 
 export default function WorkTime(props) {
-  const [stop, setStop] = useState(0.15);
+  const [stop, setStop] = useState(1.5);
+  const [stopCount, setStopCount] = useState(3);
+
   const [basicData, setBasicData] = useState({
     labels: ["周期1", "周期2", "周期3", "周期4", "周期5", "周期6", "周期7"],
     datasets: [
@@ -26,46 +27,50 @@ export default function WorkTime(props) {
 
   const calculate = (ds) => {
     let rs = { m: 0, s: 0 };
-    let data__ = [];
-    data__ = data__.concat(ds);
-    _.reverse(data__);
 
     let rest = [];
     let run = [];
 
-    // console.log(data__, stop);
+    let rest_start = false;
 
-    for (let i = 0; i < data__.length; i++) {
-      let v = data__[i];
-      rest.push(v);
+    let rest_temp = [];
+    let rest_index = 0;
+
+    for (let i = 0; i < ds.length; i++) {
+      let v = ds[i];
       if (Math.abs(v.left) > stop || Math.abs(v.right) > stop) {
-        break;
+        run.push(v);
+        if (rest_temp.length >= stopCount) {
+          rest = rest.concat(rest_temp);
+        } else {
+          run = run.concat(rest_temp);
+        }
+        rest_start = false;
+        rest_index = 0;
+        rest_temp = [];
+      } else {
+        if (rest_temp.length == 0) {
+          rest_start = true;
+        } else if (rest_index > 0 && rest_index == i - 1) {
+          rest_start = true;
+        } else {
+          run.push(v);
+          rest_start = false;
+          rest_index = 0;
+          rest_temp = [];
+        }
+        if (rest_start) {
+          rest_index = i;
+          rest_temp.push(v);
+        }
       }
     }
 
+    console.log("run", run);
     console.log("rest", rest);
 
-    _.each(ds, (v) => {
-      let diff = moment(v.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
-        moment(_.last(rest).time, "YYYY-MM-DD HH:mm:ss SSSS")
-      );
-      if (diff < 0) {
-        run.push(v);
-      }
-    });
-
-    console.log("run", run);
-
-    let diff_run = moment(_.first(run).time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
-      moment(_.last(run).time, "YYYY-MM-DD HH:mm:ss SSSS")
-    );
-
-    let diff_rest = moment(_.first(rest).time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
-      moment(_.last(rest).time, "YYYY-MM-DD HH:mm:ss SSSS")
-    );
-
-    rs.m = Math.abs(diff_run) / 1000;
-    rs.s = Math.abs(diff_rest) / 1000;
+    rs.m = run.length / 10;
+    rs.s = rest.length / 10;
 
     return rs;
   };
@@ -112,10 +117,24 @@ export default function WorkTime(props) {
                 console.log("stop", e.value);
                 setStop(e.value);
               }}
+              tooltip="小于该值认为运动停止"
             />
           </div>
         </div>
-        <div className="w-9"></div>
+        <div style={{ width: "150px" }} className="ml-2">
+          <div className="p-inputgroup ml-2">
+            <span className="p-inputgroup-addon">停止点数:</span>
+            <InputNumber
+              mode="decimal"
+              value={stopCount}
+              onChange={(e) => {
+                setStopCount(e.value);
+              }}
+              tooltip="连续停止的个数小于该数值认为休息"
+            />
+          </div>
+        </div>
+        <div className="w-8"></div>
         <Button
           label="计算"
           onClick={() => {

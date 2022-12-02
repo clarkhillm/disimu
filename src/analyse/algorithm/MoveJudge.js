@@ -31,10 +31,12 @@ export default function MoveJudge(props) {
     _.each(dataSet, (v) => {
       if (Math.abs(v.left) >= move || Math.abs(v.right) >= move) {
         rs.m += 1;
-      }
-      if (Math.abs(v.left) <= stop || Math.abs(v.right) <= stop) {
+      } else {
         rs.s += 1;
       }
+      //if (Math.abs(v.left) <= stop || Math.abs(v.right) <= stop) {
+      rs.s += 1;
+      //}
     });
     return rs;
   };
@@ -93,7 +95,7 @@ export default function MoveJudge(props) {
         <label className="ml-2" htmlFor="dataSource1">
           手选
         </label>
-        <div style={{ width: "150px" }} className="ml-2">
+        {/* <div style={{ width: "150px" }} className="ml-2">
           <div className="p-inputgroup ml-2">
             <span className="p-inputgroup-addon">停止阈值:</span>
             <InputNumber
@@ -105,7 +107,7 @@ export default function MoveJudge(props) {
               }}
             />
           </div>
-        </div>
+        </div> */}
 
         <div style={{ width: "150px" }} className="ml-2">
           <div className="p-inputgroup ml-2">

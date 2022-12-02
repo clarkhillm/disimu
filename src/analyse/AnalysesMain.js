@@ -11,21 +11,15 @@ import BigLineChart from "./BigLineChart";
 
 import { Calendar } from "primereact/calendar";
 import { Chart } from "primereact/chart";
-import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
-import { Divider } from "primereact/divider";
 import { InputNumber } from "primereact/inputnumber";
 import { PanelMenu } from "primereact/panelmenu";
 import { Sidebar } from "primereact/sidebar";
-import { Splitter, SplitterPanel } from "primereact/splitter";
 import { IMU_GLOBALS } from "../appRoute";
 import CycleRateOfChange from "./algorithm/CycleRateOfChange";
 import CycleExtremum from "./algorithm/CylcleExtremum";
-import MoveAccount from "./algorithm/MoveAccount";
-import MoveJudge from "./algorithm/MoveJudge";
-import SimpleZero from "./algorithm/SimpleZero";
-import WorkTime from "./algorithm/WorkTime";
 import HallSensor from "./algorithm/HallSensor";
+import MoveJudge from "./algorithm/MoveJudge";
+import WorkTime from "./algorithm/WorkTime";
 
 export default function AnalysesMain() {
   const [positionList, setPositionList] = useState([]);
@@ -134,6 +128,7 @@ export default function AnalysesMain() {
                 <p>
                   在工作周期内，从周期开始到两个手开始动，到两个手停止工作这段时间内所有手动的时间和停止时间都加在一起，就是有效工作时间。
                   在工作周期内，从两个手停止工作开始，到下一个工作周期开始这段时间，就是休息时间。
+                  计算方法：有效工作时间点数=大于停止阈值的所有点数+小于停止计数的所有小于停止阈值的点数;统计点数为具体的时间,单位为秒。
                 </p>
               </div>
             );

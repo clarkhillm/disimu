@@ -106,6 +106,9 @@ export default function HallSensor(props) {
       };
     });
 
+    result = _.tail(result);
+    result = _.initial(result);
+
     return result;
   };
   useEffect(() => {}, []);
