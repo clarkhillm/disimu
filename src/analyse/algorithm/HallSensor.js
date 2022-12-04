@@ -106,8 +106,12 @@ export default function HallSensor(props) {
       };
     });
 
-    result = _.tail(result);
     result = _.initial(result);
+    result = _.tail(result);
+
+    _.each(result, (v, i) => {
+      v.code = i + 1;
+    });
 
     return result;
   };
