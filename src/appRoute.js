@@ -6,6 +6,7 @@ import DevMain from "./dev/DevMain";
 import Header from "./Header";
 import Home from "./Home";
 import PositionMain from "./position/PositionMain";
+import RealTime from "./realtime/RealTime";
 
 export const IMU_GLOBALS = {};
 
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/dev" element={<DevMain />} />
         <Route path="/position" element={<PositionMain />} />
         <Route path="/analyses" element={<AnalysesMain />} />
+        <Route path="/realtime" element={<RealTime />} />
         <Route
           path="*"
           element={

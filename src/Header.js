@@ -35,6 +35,13 @@ export default function Header() {
         navigate("/analyses");
       },
     },
+    {
+      label: "工位实时数据",
+      icon: "pi pi-bolt",
+      command: (event) => {
+        navigate("/realtime");
+      },
+    },
   ];
 
   const start = (

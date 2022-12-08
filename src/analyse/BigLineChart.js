@@ -39,12 +39,13 @@ export default function BigLineChart(props) {
     dataZoom: [
       {
         type: "inside",
-        start: 0,
-        end: 10,
+        start: 90,
+        end: 100,
+        
       },
       {
-        start: 0,
-        end: 10,
+        start: 90,
+        end: 100,
       },
     ],
     dataset: {
@@ -79,8 +80,6 @@ export default function BigLineChart(props) {
     } else {
       myChart = echarts.init(chartRef.current);
     }
-
-    // console.log(props.dataSource);
 
     option.dataset.source = props.dataSource;
 
