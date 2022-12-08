@@ -254,7 +254,17 @@ export default function RealTime() {
         };
       });
 
-      console.log("result", result);
+      let rrrr = [];
+      if (result.length > 2) {
+        rrrr = _.initial(result);
+        rrrr = _.tail(result);
+
+        _.each(rrrr, (v, i) => {
+          v.code = i + 1;
+        });
+      }
+
+      console.log("result", rrrr);
     }
   };
 
