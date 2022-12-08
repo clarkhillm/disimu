@@ -257,7 +257,7 @@ export default function RealTime() {
       let rrrr = [];
       if (result.length > 2) {
         rrrr = _.initial(result);
-        rrrr = _.tail(result);
+        rrrr = _.tail(rrrr);
 
         _.each(rrrr, (v, i) => {
           v.code = i + 1;
