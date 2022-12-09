@@ -179,13 +179,12 @@ export default function RealTime() {
       } else {
         rs0.push(xxx);
         stander = v;
-        xxx = [];
+        xxx = [v];
       }
     });
 
-    if (xxx.length > 0) {
-      rs0.push(xxx);
-    }
+    rs0.push(xxx);
+
     // console.log(rs0);
 
     let cycleData = [];
