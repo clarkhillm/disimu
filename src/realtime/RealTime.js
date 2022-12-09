@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Toolbar } from "primereact/toolbar";
-import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
-import { appFetch } from "../utils";
 import moment from "moment";
+import { Button } from "primereact/button";
+import { Dropdown } from "primereact/dropdown";
+import { Toolbar } from "primereact/toolbar";
+import React, { useEffect, useRef, useState } from "react";
+import WorkTimeAuto from "../analyse/algorithm/WorkTimeAuto";
+import { Divider } from "primereact/divider";
 import BigLineChart from "../analyse/BigLineChart";
+import { appFetch } from "../utils";
 
 export default function RealTime() {
   const [positionList, setPositionList] = useState([]);
@@ -14,6 +16,8 @@ export default function RealTime() {
   const [dataSource, setDataSource] = useState([]);
 
   const [timerStart, setTimerStart] = useState(false);
+
+  const [cycleData, setCycleData] = useState([]);
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -34,7 +38,9 @@ export default function RealTime() {
     getPositionList();
   }, []);
 
-  const baseTime = "2022-11-27T16:18:31";
+  //const baseTime = "2022-11-27T16:18:31";
+  const baseTime = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+  console.log("baseTime: " + baseTime);
 
   const [count, setCount] = useState(0);
 
@@ -154,7 +160,7 @@ export default function RealTime() {
     let _cycleSet = _.filter(dataSet, (data) => {
       return data.cycle > 10;
     });
-    console.log("cycle set", _cycleSet);
+    // console.log("cycle set", _cycleSet);
 
     if (_cycleSet.length == 0) {
       return [];
@@ -180,7 +186,7 @@ export default function RealTime() {
     if (xxx.length > 0) {
       rs0.push(xxx);
     }
-    console.log(rs0);
+    // console.log(rs0);
 
     let cycleData = [];
 
@@ -254,17 +260,19 @@ export default function RealTime() {
         };
       });
 
-      let rrrr = [];
+      let _cycleData = [];
       if (result.length > 2) {
-        rrrr = _.initial(result);
-        rrrr = _.tail(rrrr);
+        _cycleData = _.initial(result);
+        _cycleData = _.tail(_cycleData);
 
-        _.each(rrrr, (v, i) => {
+        _.each(_cycleData, (v, i) => {
           v.code = i + 1;
         });
       }
 
-      console.log("result", rrrr);
+      console.log("result", _cycleData);
+
+      setCycleData(_cycleData);
     }
   };
 
@@ -274,7 +282,7 @@ export default function RealTime() {
   }, [dataSource]);
 
   return (
-    <div className="m-2">
+    <div className="m-2 ">
       <Toolbar
         className="mb-4"
         left={
@@ -301,8 +309,10 @@ export default function RealTime() {
           </div>
         }
       />
-      <div>
+      <div className="card">
         <BigLineChart dataSource={dataSource} />
+        <Divider className="text-900 m-5"></Divider>
+        <WorkTimeAuto cycleData={cycleData} />
       </div>
     </div>
   );

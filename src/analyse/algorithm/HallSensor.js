@@ -32,8 +32,8 @@ export default function HallSensor(props) {
       let diff = moment(v.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
         moment(stander.time, "YYYY-MM-DD HH:mm:ss SSSS")
       );
-      //   console.log(diff);
-      if (diff < 5000) {
+      console.log(diff);
+      if (diff < 2000) {
         xxx.push(v);
       } else {
         rs0.push(xxx);
@@ -41,6 +41,9 @@ export default function HallSensor(props) {
         xxx = [v];
       }
     });
+
+    rs0.push(xxx);
+
     console.log(rs0);
 
     let cyclePointSet = [];
@@ -62,7 +65,7 @@ export default function HallSensor(props) {
         let diff1 = moment(data.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
           moment(cyclePointSet[pointIndex + 1].time, "YYYY-MM-DD HH:mm:ss SSSS")
         );
-        console.log(diff0, diff1);
+        // console.log(diff0, diff1);
         if (diff0 < 0) {
           data.cycle = undefined;
           rs.push(data);
