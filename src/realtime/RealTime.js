@@ -39,7 +39,8 @@ export default function RealTime() {
   }, []);
 
   //const baseTime = "2022-11-27T16:18:31";
-  const baseTime = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+  const [baseTime, setBaseTime] = useState({});
+
   console.log("baseTime: " + baseTime);
 
   const [count, setCount] = useState(0);
@@ -78,15 +79,15 @@ export default function RealTime() {
     if (currentPosition) {
       index += 1;
       let from = moment(baseTime)
-        .add(index - 1, "s")
         .utc()
+        .add(index - 1, "s")
         .format("YYYY-MM-DDTHH:mm:ss[Z]");
       let to = moment(baseTime)
-        .add(index, "s")
         .utc()
+        .add(index, "s")
         .format("YYYY-MM-DDTHH:mm:ss[Z]");
 
-      //   console.log(timerStart, from, to);
+      console.log(timerStart, from, to);
 
       let rs = await appFetch(
         `/imu/analyses/query/${currentPosition}?timeRange=start:${from},stop:${to}`,
@@ -301,6 +302,8 @@ export default function RealTime() {
               label="开始"
               className="mr-2"
               onClick={() => {
+                setBaseTime(moment().utc().format("YYYY-MM-DDTHH:mm:ss[Z]"));
+                setCount(0);
                 setTimerStart(true);
               }}
             />
