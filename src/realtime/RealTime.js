@@ -7,6 +7,7 @@ import WorkTimeAuto from "../analyse/algorithm/WorkTimeAuto";
 import { Divider } from "primereact/divider";
 import BigLineChart from "../analyse/BigLineChart";
 import { appFetch } from "../utils";
+import { Accordion, AccordionTab } from "primereact/accordion";
 
 export default function RealTime() {
   const [positionList, setPositionList] = useState([]);
@@ -40,7 +41,7 @@ export default function RealTime() {
 
   //const [baseTime, setBaseTime] = useState({});
 
-  const baseTime="2022-12-09T13:28:00";
+  const baseTime = "2022-12-09T13:28:00";
 
   console.log("baseTime: " + baseTime);
 
@@ -313,9 +314,14 @@ export default function RealTime() {
         }
       />
       <div className="card">
-        <BigLineChart dataSource={dataSource} />
-        <Divider className="text-900 m-5"></Divider>
-        <WorkTimeAuto cycleData={cycleData} />
+        <Accordion multiple activeIndex={0}>
+          <AccordionTab header="原始数据">
+            <BigLineChart dataSource={dataSource} />
+          </AccordionTab>
+          <AccordionTab header="CT数据">
+            <WorkTimeAuto cycleData={cycleData} />
+          </AccordionTab>
+        </Accordion>
       </div>
     </div>
   );
