@@ -14,12 +14,12 @@ export default function WorkTimeAuto(props) {
       {
         label: "有效工作时间",
         backgroundColor: "#42A5F5",
-        data: [0, 0, 0, 0, 0, 0, 0],
+        data: [],
       },
       {
         label: "休息时间",
         backgroundColor: "#FFA726",
-        data: [0, 0, 0, 0, 0, 0, 0],
+        data: [],
       },
     ],
   });
@@ -65,8 +65,8 @@ export default function WorkTimeAuto(props) {
       }
     }
 
-    console.log("run", run);
-    console.log("rest", rest);
+    // console.log("run", run);
+    // console.log("rest", rest);
 
     rs.m = run.length / 10;
     rs.s = rest.length / 10;
@@ -74,6 +74,7 @@ export default function WorkTimeAuto(props) {
     return rs;
   };
   const basicOptions = {
+    animation: false,
     maintainAspectRatio: false,
     aspectRatio: 0.8,
     plugins: {
@@ -119,17 +120,21 @@ export default function WorkTimeAuto(props) {
       },
     ];
 
+    let ddd = _.cloneDeep(basicData);
+
     _.each(props.cycleData, (v) => {
-      console.log(" cycleData --",v);
+      console.log(" cycleData --", v);
       labels.push("周期" + v.code);
       let rs = calculate(v.dataSet);
       datasets[0].data.push(rs.m);
       datasets[1].data.push(rs.s);
     });
-    setBasicData({
-      labels: labels,
-      datasets: datasets,
-    });
+
+    ddd.labels = labels;
+    ddd.datasets[0].data = datasets[0].data;
+    ddd.datasets[1].data = datasets[1].data;
+
+    setBasicData(ddd);
   }, [props.cycleData]);
 
   return (
