@@ -29,6 +29,13 @@ export default function Header() {
       },
     },
     {
+      label: "生产线管理",
+      icon: "pi pi-arrow-right-arrow-left",
+      command: () => {
+        navigate("/line");
+      },
+    },
+    {
       label: "数据分析",
       icon: "pi pi-chart-bar",
       command: (event) => {
