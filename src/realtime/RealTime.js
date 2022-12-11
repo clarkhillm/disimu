@@ -1,13 +1,12 @@
 import moment from "moment";
+import { Accordion, AccordionTab } from "primereact/accordion";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useRef, useState } from "react";
 import WorkTimeAuto from "../analyse/algorithm/WorkTimeAuto";
-import { Divider } from "primereact/divider";
 import BigLineChart from "../analyse/BigLineChart";
 import { appFetch } from "../utils";
-import { Accordion, AccordionTab } from "primereact/accordion";
 
 export default function RealTime() {
   const [positionList, setPositionList] = useState([]);
@@ -39,9 +38,9 @@ export default function RealTime() {
     getPositionList();
   }, []);
 
-  //const [baseTime, setBaseTime] = useState({});
+  const [baseTime, setBaseTime] = useState({});
 
-  const baseTime = "2022-12-09T13:28:00";
+  // const baseTime = "2022-12-09T13:28:00";
 
   console.log("baseTime: " + baseTime);
 
@@ -304,7 +303,7 @@ export default function RealTime() {
               label="开始"
               className="mr-2"
               onClick={() => {
-                //setBaseTime(moment().utc().format("YYYY-MM-DDTHH:mm:ss[Z]"));
+                setBaseTime(moment().utc().format("YYYY-MM-DDTHH:mm:ss[Z]"));
                 //setBaseTime("2022-12-09T12:16:53");
                 setTimerStart(true);
               }}
@@ -314,7 +313,7 @@ export default function RealTime() {
         }
       />
       <div className="card">
-        <Accordion multiple activeIndex={0}>
+        <Accordion multiple activeIndex={[0]}>
           <AccordionTab header="原始数据">
             <BigLineChart dataSource={dataSource} />
           </AccordionTab>

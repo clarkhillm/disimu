@@ -6,6 +6,7 @@ import DevMain from "./dev/DevMain";
 import Header from "./Header";
 import Home from "./Home";
 import Line from "./line/Line";
+import LineDataView from "./line/LineDataView";
 import PositionMain from "./position/PositionMain";
 import RealTime from "./realtime/RealTime";
 
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/analyses" element={<AnalysesMain />} />
         <Route path="/realtime" element={<RealTime />} />
         <Route path="/line" element={<Line />} />
+        <Route path="/lineData" element={<LineDataView />} />
         <Route
           path="*"
           element={

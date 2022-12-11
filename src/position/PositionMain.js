@@ -1,7 +1,9 @@
 import { useFormik } from "formik";
+import _ from "lodash";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { Column } from "primereact/column";
+import { Dropdown } from "primereact/dropdown";
 import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
@@ -15,10 +17,13 @@ export default function PositionMain() {
   const [list, setList] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
 
+  const [lineList, setLineList] = useState([]);
+
   const formikCreate = useFormik({
     initialValues: {
       name: "",
       code: "",
+      lineId: "",
       comment: "",
     },
     validate: (data) => {
@@ -77,8 +82,17 @@ export default function PositionMain() {
     }
   };
 
+  const getLineList = async () => {
+    let rs = await appFetch("/imu/line/list", { method: "GET" });
+    if (rs.status == 200) {
+      let json = await rs.json();
+      setLineList(json);
+    }
+  };
+
   useEffect(() => {
     getList();
+    getLineList();
   }, []);
 
   return (
@@ -111,6 +125,21 @@ export default function PositionMain() {
       >
         <Column header="工位名称" field="name" sortable />
         <Column header="工位编号" field="code" sortable />
+        <Column
+          header="生产线编号"
+          field="lineId"
+          sortable
+          body={(rowdata) => {
+            let line = _.filter(lineList, (item) => {
+              return item.id == rowdata.lineId;
+            });
+
+            if (_.first(line)) {
+              return _.first(line).name;
+            }
+            return <div>-</div>;
+          }}
+        />
         <Column header="创建日期" field="dtCreated" sortable />
         <Column header="更新日期" field="dtUpdated" sortable />
         <Column
@@ -179,6 +208,18 @@ export default function PositionMain() {
               onChange={formikCreate.handleChange}
             />
             {getFormErrorMessage("code")}
+          </div>
+          <div className="field">
+            选择生产线：
+            <Dropdown
+              name="lineId"
+              value={formikCreate.values.lineId}
+              onChange={formikCreate.handleChange}
+              options={lineList}
+              optionLabel="name"
+              optionValue="id"
+            />
+            {getFormErrorMessage("lineId")}
           </div>
           <div className="p-dialog-footer pb-0">
             <Button

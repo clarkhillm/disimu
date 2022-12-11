@@ -49,6 +49,13 @@ export default function Header() {
         navigate("/realtime");
       },
     },
+    {
+      label: "单线5分钟CT统计",
+      icon: "pi pi-stopwatch",
+      command: () => {
+        navigate("/lineData");
+      },
+    },
   ];
 
   const start = (
