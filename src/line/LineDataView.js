@@ -1,13 +1,15 @@
 import _ from "lodash";
 import moment from "moment";
-import { Accordion, AccordionTab } from "primereact/accordion";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useRef, useState } from "react";
-import WorkTimeAuto from "../analyse/algorithm/WorkTimeAuto";
-import BigLineChart from "../analyse/BigLineChart";
 import { appFetch } from "../utils";
+
+import { Chart } from "primereact/chart";
+
+import { calculateHall } from "../analyse/algorithm/calculate/HallCT";
+import { calculate } from "../analyse/algorithm/calculate/WorkTime";
 
 export default function LineDataView() {
   const [lineList, setLineList] = useState([]);
@@ -22,8 +24,59 @@ export default function LineDataView() {
 
   const [canStart, setCanStart] = useState(false);
 
-  let timer = useRef();
+  const [stop, setStop] = useState(1.5);
+  const [stopCount, setStopCount] = useState(3);
 
+  const [basicData, setBasicData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: "有效工作时间",
+        backgroundColor: "#42A5F5",
+        data: [],
+      },
+      {
+        label: "休息时间",
+        backgroundColor: "#FFA726",
+        data: [],
+      },
+    ],
+  });
+
+  const basicOptions = {
+    animation: false,
+    maintainAspectRatio: false,
+    aspectRatio: 0.8,
+    plugins: {
+      legend: {
+        labels: {
+          color: "#495057",
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        ticks: {
+          color: "#495057",
+        },
+        grid: {
+          color: "#ebedef",
+        },
+      },
+      y: {
+        stacked: true,
+        ticks: {
+          color: "#495057",
+        },
+        grid: {
+          color: "#ebedef",
+        },
+      },
+    },
+  };
+
+  let timer = useRef();
   useEffect(() => {
     console.log("===", count);
     if (count >= 0) {
@@ -37,7 +90,7 @@ export default function LineDataView() {
         setCount((prevCount) => {
           return prevCount + 1;
         });
-      }, 5 * 1000);
+      }, 5 * 60 * 1000);
       return () => {
         clearInterval(timer);
       };
@@ -70,16 +123,18 @@ export default function LineDataView() {
     index += index * 5;
     let from = moment(baseTime)
       .utc()
-      .add(index - 5, "s")
+      .add(index - 5, "m")
       .format("YYYY-MM-DDTHH:mm:ss[Z]");
     let to = moment(baseTime)
       .utc()
-      .add(index, "s")
+      .add(index, "m")
       .format("YYYY-MM-DDTHH:mm:ss[Z]");
 
     console.log(timerStart, from, to);
 
-    let pv = {};
+    let rsLabels = [];
+    let rsRunDs = [];
+    let rsRestDs = [];
 
     _.each(positionList, async (position) => {
       console.log("query data ...", position);
@@ -89,9 +144,12 @@ export default function LineDataView() {
           method: "GET",
         }
       );
+
       if (rs.status == 200) {
         let ds = await rs.json();
         console.log(position.name, ds);
+
+        rsLabels.push(position.name);
 
         let _dataSource = [];
 
@@ -119,11 +177,57 @@ export default function LineDataView() {
           });
 
           _dataSource.push(data);
-
-          pv[position.name] = _dataSource;
         });
 
-        console.log("pv ---------------------------------------", pv);
+        let cycleRs = calculateHall(_dataSource);
+        console.log("cycle rs:", cycleRs);
+
+        let m = [];
+        let s = [];
+        _.each(cycleRs, (ds) => {
+          let ctRs = calculate(ds.dataSet, stop, stopCount);
+          console.log("ct rs:", position.name, ctRs);
+          if (m.length > 0) {
+            m[0] = m[0] + ctRs.m;
+          } else {
+            m[0] = ctRs.m;
+          }
+          if (s.length > 0) {
+            s[0] = s[0] + ctRs.s;
+          } else {
+            s[0] = ctRs.s;
+          }
+        });
+        if (m.length > 0) {
+          console.log("m:", m[0] / cycleRs.length);
+          rsRunDs.push(m[0]);
+        } else {
+          rsRunDs.push(0);
+        }
+        if (s.length > 0) {
+          console.log("s:", s[0] / cycleRs.length);
+          rsRestDs.push(s[0]);
+        } else {
+          rsRestDs.push(0);
+        }
+
+        console.log(rsLabels, rsRunDs, rsRestDs);
+
+        setBasicData({
+          labels: rsLabels,
+          datasets: [
+            {
+              label: "有效工作时间",
+              backgroundColor: "#42A5F5",
+              data: rsRunDs,
+            },
+            {
+              label: "休息时间",
+              backgroundColor: "#FFA726",
+              data: rsRestDs,
+            },
+          ],
+        });
       }
     });
   };
@@ -138,7 +242,7 @@ export default function LineDataView() {
     return { label: labelSet, data: _dataSet };
   };
 
-  const stop = () => {
+  const stopRead = () => {
     setTimerStart(false);
     clearInterval(timer.current);
     // setCount(0);
@@ -175,10 +279,11 @@ export default function LineDataView() {
                 setTimerStart(true);
               }}
             />
-            <Button label="停止" onClick={stop} />
+            <Button label="停止" onClick={stopRead} />
           </div>
         }
       />
+      <Chart type="bar" data={basicData} options={basicOptions} />
     </div>
   );
 }

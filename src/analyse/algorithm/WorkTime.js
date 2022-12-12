@@ -5,6 +5,8 @@ import { Divider } from "primereact/divider";
 import { InputNumber } from "primereact/inputnumber";
 import React, { useState } from "react";
 
+import { calculate } from "./calculate/WorkTime";
+
 export default function WorkTime(props) {
   const [stop, setStop] = useState(1.5);
   const [stopCount, setStopCount] = useState(3);
@@ -25,55 +27,6 @@ export default function WorkTime(props) {
     ],
   });
 
-  const calculate = (ds) => {
-    let rs = { m: 0, s: 0 };
-
-    let rest = [];
-    let run = [];
-
-    let rest_start = false;
-
-    let rest_temp = [];
-    let rest_index = 0;
-
-    for (let i = 0; i < ds.length; i++) {
-      let v = ds[i];
-      if (Math.abs(v.left) > stop || Math.abs(v.right) > stop) {
-        run.push(v);
-        if (rest_temp.length >= stopCount) {
-          rest = rest.concat(rest_temp);
-        } else {
-          run = run.concat(rest_temp);
-        }
-        rest_start = false;
-        rest_index = 0;
-        rest_temp = [];
-      } else {
-        if (rest_temp.length == 0) {
-          rest_start = true;
-        } else if (rest_index > 0 && rest_index == i - 1) {
-          rest_start = true;
-        } else {
-          run.push(v);
-          rest_start = false;
-          rest_index = 0;
-          rest_temp = [];
-        }
-        if (rest_start) {
-          rest_index = i;
-          rest_temp.push(v);
-        }
-      }
-    }
-
-    console.log("run", run);
-    console.log("rest", rest);
-
-    rs.m = run.length / 10;
-    rs.s = rest.length / 10;
-
-    return rs;
-  };
   const basicOptions = {
     maintainAspectRatio: false,
     aspectRatio: 0.8,
@@ -155,7 +108,7 @@ export default function WorkTime(props) {
 
             _.each(props.cycleData, (v) => {
               labels.push("周期" + v.code);
-              let rs = calculate(v.dataSet);
+              let rs = calculate(v.dataSet, stop, stopCount);
               datasets[0].data.push(rs.m);
               datasets[1].data.push(rs.s);
             });

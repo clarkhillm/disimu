@@ -42,7 +42,7 @@ export default function RealTime() {
 
   // const baseTime = "2022-12-09T13:28:00";
 
-  console.log("baseTime: " + baseTime);
+  // console.log("baseTime: " + baseTime);
 
   const [count, setCount] = useState(0);
 
@@ -303,8 +303,13 @@ export default function RealTime() {
               label="开始"
               className="mr-2"
               onClick={() => {
-                setBaseTime(moment().utc().format("YYYY-MM-DDTHH:mm:ss[Z]"));
-                //setBaseTime("2022-12-09T12:16:53");
+                // setBaseTime(
+                //   moment()
+                //     .utc()
+                //     .subtract(3, "s")
+                //     .format("YYYY-MM-DDTHH:mm:ss[Z]")
+                // );
+                setBaseTime("2022-12-09T13:28:00");
                 setTimerStart(true);
               }}
             />

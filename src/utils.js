@@ -45,6 +45,24 @@ export async function appFetch(url, options) {
   return response;
 }
 
+export function fetchCallBack(url, options, callback) {
+  fetch(
+    url,
+    _.assign(
+      {
+        cache: "no-cache",
+        headers: {
+          "Content-Type": "application/json",
+          "RFID-USER-TOKEN": sessionStorage.getItem("token"),
+        },
+      },
+      options
+    )
+  ).then((response) => {
+    callback(response);
+  });
+}
+
 export function calculate_time_diff(timeSet) {
   let lm = moment(_.last(timeSet), "YYYY-MM-DD HH:mm:ss SSSS").diff(
     moment(_.first(timeSet), "YYYY-MM-DD HH:mm:ss SSSS"),
