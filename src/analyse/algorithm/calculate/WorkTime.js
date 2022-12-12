@@ -1,3 +1,6 @@
+import moment from "moment";
+import _ from "lodash";
+
 export function calculate(ds, stop, stopCount) {
   let rs = { m: 0, s: 0 };
 
@@ -39,11 +42,28 @@ export function calculate(ds, stop, stopCount) {
     }
   }
 
+  let timeTotal = moment(_.last(ds).time, "YYYY-MM-DD HH:mm:ss").diff(
+    moment(_.first(ds).time, "YYYY-MM-DD HH:mm:ss"),
+    "s"
+  );
+
+  run = _.orderBy(run, (v) => {
+    return moment(v.time, "YYYY-MM-DD HH:mm:ss").unix();
+  });
+
   console.log("run", run);
   console.log("rest", rest);
 
-  rs.m = run.length;
-  rs.s = ds.length - run.length;
+  // for (let i = 0; i < run.length - 1; i++) {
+  //   let diff = moment(run[i + 1].time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
+  //     moment(run[i].time, "YYYY-MM-DD HH:mm:ss SSSS")
+  //   );
+  //   console.log("diff", diff);
+  // }
+
+  console.log("time total", timeTotal);
+  rs.m = run.length / 10;
+  rs.s = timeTotal - rs.m;
 
   return rs;
 }

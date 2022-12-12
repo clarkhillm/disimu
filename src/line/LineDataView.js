@@ -1,15 +1,14 @@
 import _ from "lodash";
 import moment from "moment";
 import { Button } from "primereact/button";
+import { Chart } from "primereact/chart";
 import { Dropdown } from "primereact/dropdown";
+import { InputNumber } from "primereact/inputnumber";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useRef, useState } from "react";
-import { appFetch } from "../utils";
-
-import { Chart } from "primereact/chart";
-
 import { calculateHall } from "../analyse/algorithm/calculate/HallCT";
 import { calculate } from "../analyse/algorithm/calculate/WorkTime";
+import { appFetch } from "../utils";
 
 export default function LineDataView() {
   const [lineList, setLineList] = useState([]);
@@ -280,6 +279,38 @@ export default function LineDataView() {
               }}
             />
             <Button label="停止" onClick={stopRead} />
+          </div>
+        }
+        right={
+          <div className="inline-flex align-items-center">
+            <div style={{ width: "150px" }} className="ml-2">
+              <div className="p-inputgroup ml-2">
+                <span className="p-inputgroup-addon">停止阈值:</span>
+                <InputNumber
+                  mode="decimal"
+                  minFractionDigits={2}
+                  value={stop}
+                  onChange={(e) => {
+                    console.log("stop", e.value);
+                    setStop(e.value);
+                  }}
+                  tooltip="小于该值认为运动停止"
+                />
+              </div>
+            </div>
+            <div style={{ width: "150px" }} className="ml-2">
+              <div className="p-inputgroup ml-2">
+                <span className="p-inputgroup-addon">停止点数:</span>
+                <InputNumber
+                  mode="decimal"
+                  value={stopCount}
+                  onChange={(e) => {
+                    setStopCount(e.value);
+                  }}
+                  tooltip="连续停止的个数小于该数值认为休息"
+                />
+              </div>
+            </div>
           </div>
         }
       />

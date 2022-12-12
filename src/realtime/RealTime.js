@@ -2,6 +2,7 @@ import moment from "moment";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
+import { InputText } from "primereact/inputtext";
 import { Toolbar } from "primereact/toolbar";
 import React, { useEffect, useRef, useState } from "react";
 import WorkTimeAuto from "../analyse/algorithm/WorkTimeAuto";
@@ -18,6 +19,8 @@ export default function RealTime() {
   const [timerStart, setTimerStart] = useState(false);
 
   const [cycleData, setCycleData] = useState([]);
+
+  const [delay, setDelay] = useState(3);
 
   const getPositionList = async () => {
     let rs = await appFetch("/imu/position/list", { method: "GET" });
@@ -303,17 +306,28 @@ export default function RealTime() {
               label="开始"
               className="mr-2"
               onClick={() => {
-                // setBaseTime(
-                //   moment()
-                //     .utc()
-                //     .subtract(3, "s")
-                //     .format("YYYY-MM-DDTHH:mm:ss[Z]")
-                // );
-                setBaseTime("2022-12-09T13:28:00");
+                let baseTime = moment()
+                  .utc()
+                  .subtract(delay, "s")
+                  .format("YYYY-MM-DDTHH:mm:ss[Z]");
+                setBaseTime(baseTime);
+                // setBaseTime("2022-12-09T13:28:00");
+                console.log("baseTime", baseTime);
                 setTimerStart(true);
               }}
             />
             <Button label="停止" onClick={stop} />
+          </div>
+        }
+        right={
+          <div>
+            延时：
+            <InputText
+              value={delay}
+              onChange={(e) => {
+                setDelay(e.value);
+              }}
+            />
           </div>
         }
       />
