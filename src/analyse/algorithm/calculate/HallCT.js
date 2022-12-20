@@ -94,6 +94,10 @@ export function calculateHall(ds) {
   result = _.initial(result);
   result = _.tail(result);
 
+  if (result.length > 10) {
+    result = _.takeRight(result, 10);
+  }
+
   _.each(result, (v, i) => {
     v.code = i + 1;
   });

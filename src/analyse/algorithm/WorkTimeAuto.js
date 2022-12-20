@@ -11,7 +11,7 @@ export default function WorkTimeAuto(props) {
   const [stopCount, setStopCount] = useState(3);
 
   const [basicData, setBasicData] = useState({
-    labels: ["周期1", "周期2", "周期3", "周期4", "周期5", "周期6", "周期7"],
+    labels: [],
     datasets: [
       {
         label: "有效工作时间",
@@ -76,6 +76,11 @@ export default function WorkTimeAuto(props) {
     ];
 
     let ddd = _.cloneDeep(basicData);
+    if (ddd.labels.length > 10) {
+      ddd.labels = _.tail(ddd);
+      ddd.datasets[0].data = _.tail(ddd.datasets[0].data);
+      ddd.datasets[1].data = _.tail(ddd.datasets[1].data);
+    }
 
     _.each(props.cycleData, (v) => {
       console.log(" cycleData --", v);
