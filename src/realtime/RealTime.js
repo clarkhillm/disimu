@@ -49,12 +49,51 @@ export default function RealTime() {
 
   const [count, setCount] = useState(0);
 
+  let cycleCount = 0;
+
   useEffect(() => {
     console.log("===", count);
     if (count > 0) {
       updateDataSet(count);
+      if (dataSet.length > 0) {
+        console.log("clean data set");
+      }
     }
   }, [count]);
+
+  const cleanDataSet = (dds) => {
+    let dsTmp = [];
+    if (dds.LEFT.length > 0) {
+      dsTmp = dds.LEFT;
+    } else {
+      dsTmp = dds.RIGHT;
+    }
+
+    if (dsTmp.length == 0) {
+      return;
+    }
+
+    let p0 = _.first(dsTmp);
+    let pl = _.last(dsTmp);
+    // console.log("p0&pl: ", p0, pl);
+
+    let from = moment(p0.datetime);
+    let to = moment(pl.datetime);
+
+    if (to.diff(from, "minutes") >= 2) {
+      console.log("start cleaning ...");
+      cycleCount += 1;
+      if (dds.LEFT.length > 0) {
+        dds.LEFT = _.drop(dds.LEFT, 10);
+      }
+      if (dds.RIGHT.length > 0) {
+        dds.RIGHT = _.drop(dds.RIGHT, 10);
+      }
+      if (dds.cycle.length > 0) {
+        //dds.cycle = _.drop(dds.cycle, 1);
+      }
+    }
+  };
 
   useEffect(() => {
     if (timerStart) {
@@ -91,7 +130,7 @@ export default function RealTime() {
         .add(index, "s")
         .format("YYYY-MM-DDTHH:mm:ss[Z]");
 
-      console.log(timerStart, from, to);
+      // console.log(timerStart, from, to);
 
       let rs = await appFetch(
         `/imu/analyses/query/${currentPosition}?timeRange=start:${from},stop:${to}`,
@@ -106,8 +145,11 @@ export default function RealTime() {
 
         let dds = _.cloneDeep(dataSet);
 
+        cleanDataSet(dds);
+
         if (ds.LEFT) {
           dds.LEFT = dds.LEFT.concat(ds.LEFT);
+          console.log("ds size:", dds.LEFT.length);
         }
         if (ds.RIGHT) {
           dds.RIGHT = dds.RIGHT.concat(ds.RIGHT);
@@ -157,12 +199,12 @@ export default function RealTime() {
     // setCount(0);
   };
 
-  const calculateCycle = (dataSet) => {
+  const calculateCycle = (dataSource__) => {
     console.log("Calculating cycle ...");
 
     //找到所有的cycle第一个数据。
 
-    let _cycleSet = _.filter(dataSet, (data) => {
+    let _cycleSet = _.filter(dataSource__, (data) => {
       return data.cycle > 10;
     });
     // console.log("cycle set", _cycleSet);
@@ -201,11 +243,14 @@ export default function RealTime() {
 
     // console.log(cyclePointSet);
 
+    let cycleAllCount = dataSet.cycle.length - 2;
+    console.log("cycleAllCount: " + cycleAllCount);
+
     let rs = [];
     if (cyclePointSet.length > 0) {
       let pointIndex = 0;
 
-      _.each(_.cloneDeep(dataSet), (data) => {
+      _.each(_.cloneDeep(dataSource__), (data) => {
         if (pointIndex + 1 < cyclePointSet.length) {
           let diff0 = moment(data.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
             moment(cyclePointSet[pointIndex].time, "YYYY-MM-DD HH:mm:ss SSSS")
@@ -238,7 +283,7 @@ export default function RealTime() {
       });
 
       rs = [];
-      _.each(_.cloneDeep(dataSet), (data) => {
+      _.each(_.cloneDeep(dataSource__), (data) => {
         let diff0 = moment(data.time, "YYYY-MM-DD HH:mm:ss SSSS").diff(
           moment(_.last(cyclePointSet).time, "YYYY-MM-DD HH:mm:ss SSSS")
         );
@@ -253,12 +298,13 @@ export default function RealTime() {
       cycleData.push(rs);
     }
 
-    // console.log(cycleData);
+    console.log(cycleData);
 
     if (cycleData.length > 0) {
+      cycleData = _.filter(cycleData, (data) => data.length > 0);
       let result = _.map(cycleData, (v, i) => {
         return {
-          code: i + 1,
+          code: 0,
           dataSet: v,
           TimeRanges: [_.first(v).time, _.last(v).time],
         };
@@ -270,11 +316,15 @@ export default function RealTime() {
         _cycleData = _.tail(_cycleData);
 
         _.each(_cycleData, (v, i) => {
-          v.code = i + 1;
+          v.code = i + (cycleAllCount - _cycleData.length);
         });
       }
 
-      console.log("result", _cycleData);
+      // console.log("result", _cycleData);
+
+      if (_cycleData.length >= 5) {
+        _cycleData = _.takeRight(_cycleData, 5);
+      }
 
       setCycleData(_cycleData);
     }
@@ -282,7 +332,7 @@ export default function RealTime() {
 
   useEffect(() => {
     let rs = calculateCycle(dataSource);
-    console.log("cycle", rs);
+    // console.log("cycle", rs);
   }, [dataSource]);
 
   return (
@@ -306,12 +356,12 @@ export default function RealTime() {
               label="开始"
               className="mr-2"
               onClick={() => {
-                let baseTime = moment()
-                  .utc()
-                  .subtract(delay, "s")
-                  .format("YYYY-MM-DDTHH:mm:ss[Z]");
-                setBaseTime(baseTime);
-                // setBaseTime("2022-12-09T13:28:00");
+                // let baseTime = moment()
+                //   .utc()
+                //   .subtract(delay, "s")
+                //   .format("YYYY-MM-DDTHH:mm:ss[Z]");
+                // setBaseTime(baseTime);
+                setBaseTime("2022-12-15T15:28:30");
                 console.log("baseTime", baseTime);
                 setTimerStart(true);
               }}
