@@ -83,8 +83,12 @@ export default function WorkTimeAuto(props) {
     }
 
     _.each(props.cycleData, (v) => {
-      console.log(" cycleData --", v);
-      labels.push("周期" + v.code);
+      console.log("cycleData --", v);
+
+      let range = v.TimeRanges;
+      let start = range[0].split(" ")[1];
+      let end = range[1].split(" ")[1];
+      labels.push(start + "-" + end);
       let rs = calculate(v.dataSet, stop, stopCount);
       datasets[0].data.push(rs.m);
       datasets[1].data.push(rs.s);
