@@ -80,7 +80,7 @@ export default function RealTime() {
     let from = moment(p0.datetime);
     let to = moment(pl.datetime);
 
-    if (to.diff(from, "minutes") >= 2) {
+    if (to.diff(from, "minutes") >= 1) {
       console.log("start cleaning ...");
       cycleCount += 1;
       if (dds.LEFT.length > 0) {
@@ -356,12 +356,12 @@ export default function RealTime() {
               label="开始"
               className="mr-2"
               onClick={() => {
-                // let baseTime = moment()
-                //   .utc()
-                //   .subtract(delay, "s")
-                //   .format("YYYY-MM-DDTHH:mm:ss[Z]");
-                // setBaseTime(baseTime);
-                setBaseTime("2022-12-15T15:28:30");
+                let baseTime = moment()
+                  .utc()
+                  .subtract(delay, "s")
+                  .format("YYYY-MM-DDTHH:mm:ss[Z]");
+                setBaseTime(baseTime);
+                // setBaseTime("2022-12-15T15:28:30");
                 console.log("baseTime", baseTime);
                 setTimerStart(true);
               }}
