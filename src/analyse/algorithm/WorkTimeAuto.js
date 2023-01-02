@@ -3,6 +3,7 @@ import { Chart } from "primereact/chart";
 import { Divider } from "primereact/divider";
 import { InputNumber } from "primereact/inputnumber";
 import React, { useEffect, useState } from "react";
+import moment from "moment/moment";
 
 import { calculate } from "./calculate/WorkTime";
 
@@ -95,6 +96,7 @@ export default function WorkTimeAuto(props) {
       );
 
       labels.push(start + "-" + end + "(" + timeTotal + ")");
+      //labels.push(start + "-" + end );
 
       let rs = calculate(v.dataSet, stop, stopCount);
       datasets[0].data.push(rs.m);
