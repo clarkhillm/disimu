@@ -88,7 +88,14 @@ export default function WorkTimeAuto(props) {
       let range = v.TimeRanges;
       let start = range[0].split(" ")[1];
       let end = range[1].split(" ")[1];
-      labels.push(start + "-" + end);
+
+      let timeTotal = moment(_.last(range), "YYYY-MM-DD HH:mm:ss").diff(
+        moment(_.first(range), "YYYY-MM-DD HH:mm:ss"),
+        "s"
+      );
+
+      labels.push(start + "-" + end + "(" + timeTotal + ")");
+
       let rs = calculate(v.dataSet, stop, stopCount);
       datasets[0].data.push(rs.m);
       datasets[1].data.push(rs.s);
