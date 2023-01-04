@@ -1,6 +1,49 @@
 import moment from "moment";
 import _ from "lodash";
 
+export function washData(ds, stop) {
+  let ds2 = [];
+  for (let i = 0; i < ds.length; i++) {
+    let v = ds[i];
+    if (Math.abs(v.left) >= stop || Math.abs(v.right) >= stop) {
+      v.type = "mv";
+    } else {
+      v.type = "rest";
+    }
+    ds2.push(v);
+  }
+
+  if (ds2.length == 0) {
+    return;
+  }
+
+  let type = ds2[0].type;
+  let typeCount = 1;
+  let countStart = 0;
+  for (let i = 1; i < ds2.length; i++) {
+    if (ds2[i].type === type) {
+      typeCount++;
+    } else {
+      if (typeCount <= 3) {
+        if (type === "mv") {
+          for (let j = countStart; j < typeCount; j++) {
+            ds[j].left = 0;
+            ds[j].right = 0;
+          }
+        } else {
+          for (let j = countStart; j < typeCount; j++) {
+            ds[j].left = stop + 2;
+            ds[j].right = stop + 2;
+          }
+        }
+      }
+      countStart += i;
+      typeCount = 0;
+      type = ds2[i].type;
+    }
+  }
+}
+
 export function calculate(ds, stop, stopCount) {
   let rs = { m: 0, s: 0 };
 
@@ -14,6 +57,8 @@ export function calculate(ds, stop, stopCount) {
 
   let rest_start_point = [];
   let rest_end_point = [];
+
+  washData(ds, stop);
 
   for (let i = 0; i < ds.length; i++) {
     let v = ds[i];
